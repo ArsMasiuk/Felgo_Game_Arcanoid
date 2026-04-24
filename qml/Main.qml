@@ -4,13 +4,6 @@ import QtQuick 2.0
 GameWindow {
     id: gameWindow
 
-    // You get free licenseKeys from https://felgo.com/licenseKey
-    // With a licenseKey you can:
-    //  * Publish your games & apps for the app stores
-    //  * Remove the Felgo Splash Screen or set a custom one (available with the Pro Licenses)
-    //  * Add plugins to monetize, analyze & improve your apps (available with the Pro Licenses)
-    //licenseKey: "<generate one from https://felgo.com/licenseKey>"
-
     activeScene: scene
 
     // the size of the Window can be changed at runtime by pressing Ctrl (or Cmd on Mac) + the number keys 1-8
@@ -27,13 +20,45 @@ GameWindow {
         width: 480
         height: 320
 
+        focus: true   // IMPORTANT: enables key handling
+        Component.onCompleted: forceActiveFocus()
+
+        Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Left)
+                gameArea.leftPressed = true
+
+            if (event.key === Qt.Key_Right)
+                gameArea.rightPressed = true
+
+            if (event.key === Qt.Key_Space && gameArea.ballStuck) {
+                gameArea.ballStuck = false
+                event.accepted = true
+            }
+        }
+
+        Keys.onReleased: function(event) {
+            if (event.key === Qt.Key_Left)
+                gameArea.leftPressed = false
+
+            if (event.key === Qt.Key_Right)
+                gameArea.rightPressed = false
+        }
+
         Rectangle {
             id: gameArea
             anchors.fill: parent
             color: "black"
 
+            // game variables
             property real ballSpeedX: 3
-            property real ballSpeedY: -3
+            property real ballSpeedY: 3
+            property bool ballStuck: true
+
+            property real paddleSpeed: 6
+            property bool leftPressed: false
+            property bool rightPressed: false
+
+            property int score: 0
 
             // Paddle
             Rectangle {
@@ -45,13 +70,13 @@ GameWindow {
                 y: parent.height - 30
                 x: parent.width / 2 - width / 2
 
-                MouseArea {
+                /*MouseArea {
                     anchors.fill: parent
                     drag.target: paddle
                     drag.axis: Drag.XAxis
                     drag.minimumX: 0
                     drag.maximumX: gameArea.width - paddle.width
-                }
+                }*/
             }
 
             // Ball
@@ -68,6 +93,7 @@ GameWindow {
             // Bricks
             Repeater {
                 model: 30
+
                 Rectangle {
                     width: 50
                     height: 20
@@ -86,12 +112,37 @@ GameWindow {
                 interval: 16
                 running: true
                 repeat: true
+
                 onTriggered: {
+                    // Paddle movement
+                    if (gameArea.leftPressed)
+                        paddle.x -= gameArea.paddleSpeed
+
+                    if (gameArea.rightPressed)
+                        paddle.x += gameArea.paddleSpeed
+
+                    // Clamp inside screen
+                    if (paddle.x < 0)
+                        paddle.x = 0
+
+                    if (paddle.x + paddle.width > gameArea.width)
+                        paddle.x = gameArea.width - paddle.width
+
+
+
+                    // Ball movement
+                    if (gameArea.ballStuck) {
+                        // Stick ball to paddle
+                        ball.x = paddle.x + paddle.width / 2 - ball.width / 2
+                        ball.y = paddle.y - ball.height - 2
+                        return
+                    }
+
                     // Move ball
                     ball.x += gameArea.ballSpeedX
                     ball.y += gameArea.ballSpeedY
 
-                    // Wall collisions
+                    // Walls
                     if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
                         gameArea.ballSpeedX *= -1
 
@@ -105,11 +156,13 @@ GameWindow {
                         gameArea.ballSpeedY *= -1
                     }
 
-                    // Bottom (reset)
+                    // Bottom → reset and stick again
                     if (ball.y > gameArea.height) {
-                        ball.x = gameArea.width / 2
-                        ball.y = gameArea.height / 2
+                        gameArea.ballStuck = true
                     }
+
+
+
 
                     // Brick collisions
                     for (let i = 0; i < gameArea.children.length; i++) {

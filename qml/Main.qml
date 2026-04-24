@@ -60,6 +60,14 @@ GameWindow {
 
             property int score: 0
 
+            property int cols: 10
+            property int rows: 3
+            property real brickSpacing: 4
+
+            property real brickWidth: (width - (cols + 1) * brickSpacing) / cols
+            property real brickHeight: 20
+
+
             // Paddle
             Rectangle {
                 id: paddle
@@ -92,16 +100,20 @@ GameWindow {
 
             // Bricks
             Repeater {
-                model: 30
+                model: gameArea.cols * gameArea.rows
 
                 Rectangle {
-                    width: 50
-                    height: 20
+                    width: gameArea.brickWidth
+                    height: gameArea.brickHeight
+
                     color: "steelblue"
                     border.color: "white"
 
-                    x: (index % 10) * 60 + 10
-                    y: Math.floor(index / 10) * 30 + 10
+                    property int col: index % gameArea.cols
+                    property int row: Math.floor(index / gameArea.cols)
+
+                    x: gameArea.brickSpacing + col * (gameArea.brickWidth + gameArea.brickSpacing)
+                    y: gameArea.brickSpacing + row * (gameArea.brickHeight + gameArea.brickSpacing)
 
                     property bool destroyed: false
                     visible: !destroyed
@@ -146,8 +158,10 @@ GameWindow {
                     if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
                         gameArea.ballSpeedX *= -1
 
-                    if (ball.y <= 0)
+                    if (ball.y <= 0){
+                        ball.y = 1
                         gameArea.ballSpeedY *= -1
+                    }
 
                     // Paddle collision
                     if (ball.y + ball.height >= paddle.y &&

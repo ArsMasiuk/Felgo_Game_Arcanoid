@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleDisplayName</key>
-    <string>GamePlayground</string>
+    <string>Arcanoid</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
     <key>CFBundleVersion</key>
     <string>$(PRODUCT_VERSION_CODE)</string>
     <key>UIStatusBarHidden</key>
-    <true/>
+    <false/>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UIViewControllerBasedStatusBarAppearance</key>
@@ -50,13 +50,13 @@
     <string>App would like to access Bluetooth.</string>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>App would like to access Bluetooth.</string>
-    <key>NSContactsUsageDescription</key>
-    <string>App would like to read contacts from the Addressbook.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>App would like to access the microphone.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>App would like to access your location while you are using the app.</string>
+    <string>App would like to access your location.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>App would like to access your location while in the background.</string>
+    <string>App would like to access your location.</string>
+    <key>NSContactsUsageDescription</key>
+    <string>App would like to read contacts from the Addressbook.</string>
 </dict>
 </plist>

@@ -25,6 +25,7 @@ dependencies {
     implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
+
 }
 
 def intCompileSdkVersion = androidCompileSdkVersion.replaceAll("[^0-9]", "").toInteger()
@@ -44,7 +45,7 @@ android {
      *******************************************************/
 
     namespace            androidPackageName
-
+    
     compileSdkVersion    intCompileSdkVersion
     buildToolsVersion    androidBuildToolsVersion
 
@@ -60,6 +61,7 @@ android {
       versionCode      = productVersionCode.toInteger()
       versionName      = productVersionName
       minSdkVersion    = project.hasProperty("qtMinSdkVersion") ? qtMinSdkVersion.toInteger() : 28
+
     }
 
     sourceSets {
@@ -90,3 +92,4 @@ android {
         }
     }
 }
+

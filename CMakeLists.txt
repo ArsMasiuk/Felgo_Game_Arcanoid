@@ -73,3 +73,23 @@ target_link_libraries(Arcanoid PRIVATE Felgo)
 # for the remaining steps see here: https://felgo.com/custom-code-reload-app/
 # find_package(FelgoHotReload REQUIRED)
 # target_link_libraries(Arcanoid PRIVATE FelgoHotReload)
+
+# documentation
+#file(GLOB_RECURSE DocFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} doc/*.qdoc*)
+
+find_program(QDOC_EXECUTABLE
+    NAMES qdoc
+    PATHS "C:/Felgo/Felgo/mingw_64/bin"
+)
+
+if(NOT QDOC_EXECUTABLE)
+    message(FATAL_ERROR "QDoc not found")
+endif()
+
+add_custom_target(docs
+    COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/docs/html
+    COMMAND ${QDOC_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/docs/arcanoid.qdocconf
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating documentation with QDoc"
+)

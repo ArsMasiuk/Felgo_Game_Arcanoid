@@ -1,0 +1,194 @@
+/*!
+    \page arcanoid.html
+    \title Arcanoid Game Tutorial (Felgo + Qt Quick)
+
+    \brief A complete tutorial explaining how to build a simple Arkanoid-style game
+    using Felgo GameWindow and Qt Quick.
+
+    This tutorial is based on a working QML implementation of a brick breaker game.
+
+    \section1 Overview
+
+    The game consists of:
+    \list
+        \li A paddle controlled by keyboard input
+        \li A bouncing ball
+        \li A grid of destructible bricks
+        \li A simple physics update loop using a Timer
+    \endlist
+
+    The game is implemented using:
+    \list
+        \li Felgo GameWindow
+        \li Qt Quick Scene
+        \li QML Rectangle objects
+        \li Timer-based game loop (no physics engine)
+    \endlist
+
+    \section1 Game Window Setup
+
+    The root element is a Felgo GameWindow:
+
+    \code
+    GameWindow {
+        screenWidth: 960
+        screenHeight: 640
+    }
+    \endcode
+
+    The game uses a logical resolution of 480x320 which is scaled automatically.
+
+    \section1 Scene and Input Handling
+
+    The Scene handles keyboard input:
+
+    \list
+        \li Left arrow → move paddle left
+        \li Right arrow → move paddle right
+        \li Space → launch ball
+    \endlist
+
+    Example:
+
+    \code
+    Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Left)
+            gameArea.leftPressed = true
+    }
+    \endcode
+
+    \section1 Game Area Variables
+
+    The game logic is stored inside a Rectangle called \c gameArea.
+
+    It contains:
+
+    \list
+        \li Ball speed (X and Y)
+        \li Paddle movement speed
+        \li Score tracking
+        \li Brick grid configuration
+    \endlist
+
+    Example:
+
+    \code
+    property real ballSpeedX: 3
+    property real ballSpeedY: 3
+    property bool ballStuck: true
+    \endcode
+
+    \section1 Paddle
+
+    The paddle is a simple Rectangle:
+
+    \code
+    Rectangle {
+        width: 100
+        height: 15
+    }
+    \endcode
+
+    It is moved using keyboard input inside the game loop.
+
+    \section1 Ball
+
+    The ball is a small red rectangle:
+
+    \code
+    Rectangle {
+        width: 12
+        height: 12
+        radius: 6
+    }
+    \endcode
+
+    Behavior:
+    \list
+        \li Sticks to paddle before launch
+        \li Moves using velocity (ballSpeedX/Y)
+        \li Bounces on walls and paddle
+    \endlist
+
+    \section1 Bricks System
+
+    Bricks are generated using a Repeater:
+
+    \code
+    Repeater {
+        model: gameArea.cols * gameArea.rows
+    }
+    \endcode
+
+    Each brick:
+    \list
+        \li Has position based on row/column
+        \li Can be destroyed on collision
+        \li Becomes invisible when hit
+    \endlist
+
+    \section1 Game Loop
+
+    The game uses a Timer running at ~60 FPS:
+
+    \code
+    Timer {
+        interval: 16
+        running: true
+        repeat: true
+    }
+    \endcode
+
+    This loop handles:
+    \list
+        \li Paddle movement
+        \li Ball physics
+        \li Collision detection
+        \li Brick destruction
+    \endlist
+
+    \section1 Collision System
+
+    The collision logic includes:
+
+    \section2 Ball vs Walls
+    Ball bounces when hitting left, right, or top walls.
+
+    \section2 Ball vs Paddle
+    If the ball touches the paddle, Y velocity is reversed.
+
+    \section2 Ball vs Bricks
+    When a collision is detected:
+    \list
+        \li Brick is marked as destroyed
+        \li Ball direction is reversed
+    \endlist
+
+    \section1 Game Reset
+
+    If the ball falls below the screen:
+
+    \list
+        \li Ball is reset to paddle
+        \li Ball becomes stuck again
+    \endlist
+
+    \section1 Conclusion
+
+    You now have a working Arcanoid-style game built with:
+
+    \list
+        \li Felgo GameWindow
+        \li Qt Quick Scene
+        \li Timer-based physics loop
+        \li Simple collision detection system
+    \endlist
+
+    Next improvements could include:
+    \list
+        \li Score display UI
+        \li Sound effects
+        \li Levels system
+        \li Power-ups
+    \endlist
+*/

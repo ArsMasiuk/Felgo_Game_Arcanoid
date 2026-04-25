@@ -1,0 +1,18 @@
+project = Arcanoid
+description = Arcanoid Game Tutorial
+
+outputformats = HTML
+outputdir = ../build/docs/html
+overwrite = true
+
+sourcedirs = ../qml ../docs
+headerdirs = ../qml
+
+# Include paths (important if you use Qt types)
+includepaths = ../qml ../
+
+# HTML settings
+#HTML.stylesheets = style.css
+
+# main page
+indexpages = arcanoid

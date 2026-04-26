@@ -28,3 +28,7 @@ HTML.style = "h3.fn,span.fn" \
 
 # main page
 indexpages = arcanoid
+
+# images
+imagedirs = images
+

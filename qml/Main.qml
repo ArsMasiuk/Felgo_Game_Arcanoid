@@ -35,18 +35,7 @@ GameWindow {
             color: "black"
 
             // game variables
-            property real ballSpeedX: 3
-            property real ballSpeedY: 3
-            property bool ballStuck: true
-
             property int score: 0
-
-            property int cols: 10
-            property int rows: 3
-            property real brickSpacing: 4
-
-            property real brickWidth: (width - (cols + 1) * brickSpacing) / cols
-            property real brickHeight: 20
 
 
             // Paddle
@@ -81,24 +70,35 @@ GameWindow {
                 color: "red"
                 x: parent.width / 2
                 y: parent.height / 2
+
+                property real ballSpeedX: 3
+                property real ballSpeedY: 3
+                property bool ballStuck: true
             }
 
             // Bricks
             Repeater {
-                model: gameArea.cols * gameArea.rows
+                id: bricks
+                model: bricks.cols * bricks.rows
+
+                property int cols: 10
+                property int rows: 3
+                property real brickSpacing: 4
+                property real brickWidth: (gameArea.width - (cols + 1) * brickSpacing) / cols
+                property real brickHeight: 20
 
                 Rectangle {
-                    width: gameArea.brickWidth
-                    height: gameArea.brickHeight
+                    width: bricks.brickWidth
+                    height: bricks.brickHeight
 
                     color: "steelblue"
                     border.color: "white"
 
-                    property int col: index % gameArea.cols
-                    property int row: Math.floor(index / gameArea.cols)
+                    property int col: index % bricks.cols
+                    property int row: Math.floor(index / bricks.cols)
 
-                    x: gameArea.brickSpacing + col * (gameArea.brickWidth + gameArea.brickSpacing)
-                    y: gameArea.brickSpacing + row * (gameArea.brickHeight + gameArea.brickSpacing)
+                    x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
+                    y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing)
 
                     property bool destroyed: false
                     visible: !destroyed
@@ -128,40 +128,36 @@ GameWindow {
 
 
                     // Ball movement
-                    if (gameArea.ballStuck) {
-                        // Stick ball to paddle
+                    if (ball.ballStuck) {
                         ball.x = paddle.x + paddle.width / 2 - ball.width / 2
                         ball.y = paddle.y - ball.height - 2
                         return
                     }
 
                     // Move ball
-                    ball.x += gameArea.ballSpeedX
-                    ball.y += gameArea.ballSpeedY
+                    ball.x += ball.ballSpeedX
+                    ball.y += ball.ballSpeedY
 
                     // Walls
                     if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
-                        gameArea.ballSpeedX *= -1
+                        ball.ballSpeedX *= -1
 
                     if (ball.y <= 0){
                         ball.y = 1
-                        gameArea.ballSpeedY *= -1
+                        ball.ballSpeedY *= -1
                     }
 
                     // Paddle collision
                     if (ball.y + ball.height >= paddle.y &&
                         ball.x + ball.width >= paddle.x &&
                         ball.x <= paddle.x + paddle.width) {
-                        gameArea.ballSpeedY *= -1
+                        ball.ballSpeedY *= -1
                     }
 
                     // Bottom → reset and stick again
                     if (ball.y > gameArea.height) {
-                        gameArea.ballStuck = true
+                        ball.ballStuck = true
                     }
-
-
-
 
                     // Brick collisions
                     for (let i = 0; i < gameArea.children.length; i++) {
@@ -173,7 +169,7 @@ GameWindow {
                                 ball.y + ball.height > item.y) {
 
                                 item.destroyed = true
-                                gameArea.ballSpeedY *= -1
+                                ball.ballSpeedY *= -1
                                 break
                             }
                         }
@@ -190,8 +186,8 @@ GameWindow {
             if (event.key === Qt.Key_Right)
                 paddle.rightPressed = true
 
-            if (event.key === Qt.Key_Space && gameArea.ballStuck) {
-                gameArea.ballStuck = false
+            if (event.key === Qt.Key_Space && ball.ballStuck) {
+                ball.ballStuck = false
                 event.accepted = true
             }
         }

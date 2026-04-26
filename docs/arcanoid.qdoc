@@ -65,7 +65,7 @@
     \section1 Step 3: Set Up the Game Area
 
     Add a black \c Rectangle that fills the scene. This acts as the game area and holds
-    all the game state properties.
+    the score.
 
     \code
     Rectangle {
@@ -73,46 +73,17 @@
         anchors.fill: parent
         color: "black"
 
-        property real ballSpeedX: 3
-        property real ballSpeedY: 3
-        property bool ballStuck: true
-
-        property real paddleSpeed: 6
-        property bool leftPressed: false
-        property bool rightPressed: false
-
         property int score: 0
-
-        property int cols: 10
-        property int rows: 3
-        property real brickSpacing: 4
-
-        property real brickWidth: (width - (cols + 1) * brickSpacing) / cols
-        property real brickHeight: 20
     }
     \endcode
-
-    Key properties:
 
     \table
         \header
             \li Property
             \li Purpose
         \row
-            \li \c ballSpeedX, \c ballSpeedY
-            \li Ball velocity in pixels per frame
-        \row
-            \li \c ballStuck
-            \li When \c true, the ball stays attached to the paddle
-        \row
-            \li \c paddleSpeed
-            \li How many pixels the paddle moves per frame
-        \row
-            \li \c cols, \c rows
-            \li Grid dimensions for brick layout
-        \row
-            \li \c brickWidth
-            \li Calculated automatically to fill the available width evenly
+            \li \c score
+            \li Tracks the player's current score
     \endtable
 
     \section1 Step 4: Create the Paddle
@@ -134,7 +105,7 @@
     The paddle starts centered horizontally. It will be moved by keyboard input
     (handled in Step 7).
 
-    To make the paddle movable, lets extend \c paddle by adding following properties now:
+    To make the paddle movable, lets extend \c paddle by adding the following properties to it:
 
     \code
     Rectangle {
@@ -209,24 +180,32 @@
 
     \section1 Step 6: Build the Brick Grid
 
-    Use a \c Repeater to generate a grid of bricks. Each brick calculates its own
-    column and row from its \c index.
+    Use a \c Repeater to generate a grid of bricks. The brick layout properties are
+    defined on the Repeater itself, and each brick calculates its own column and row
+    from its \c index.
 
     \code
     Repeater {
-        model: gameArea.cols * gameArea.rows
+        id: bricks
+        model: bricks.cols * bricks.rows
+
+        property int cols: 10
+        property int rows: 3
+        property real brickSpacing: 4
+        property real brickWidth: (gameArea.width - (cols + 1) * brickSpacing) / cols
+        property real brickHeight: 20
 
         Rectangle {
-            width: gameArea.brickWidth
-            height: gameArea.brickHeight
+            width: bricks.brickWidth
+            height: bricks.brickHeight
             color: "steelblue"
             border.color: "white"
 
-            property int col: index % gameArea.cols
-            property int row: Math.floor(index / gameArea.cols)
+            property int col: index % bricks.cols
+            property int row: Math.floor(index / bricks.cols)
 
-            x: gameArea.brickSpacing + col * (gameArea.brickWidth + gameArea.brickSpacing)
-            y: gameArea.brickSpacing + row * (gameArea.brickHeight + gameArea.brickSpacing)
+            x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
+            y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing)
 
             property bool destroyed: false
             visible: !destroyed
@@ -236,9 +215,11 @@
 
     How the grid works:
     \list
+        \li The layout properties (\c cols, \c rows, \c brickSpacing, \c brickWidth, \c brickHeight) live on the \c bricks Repeater.
         \li The \c model produces \c{cols × rows} items (10 × 3 = 30 bricks).
         \li Each brick computes its \c col and \c row from the flat \c index.
         \li The \c x and \c y positions include spacing between bricks.
+        \li \c brickWidth is calculated from \c gameArea.width to fill the available space evenly.
         \li When \c destroyed is set to \c true, the brick becomes invisible.
     \endlist
 
@@ -249,23 +230,23 @@
     \code
     Keys.onPressed: function(event) {
         if (event.key === Qt.Key_Left)
-            gameArea.leftPressed = true
+            paddle.leftPressed = true
 
         if (event.key === Qt.Key_Right)
-            gameArea.rightPressed = true
+            paddle.rightPressed = true
 
-        if (event.key === Qt.Key_Space && gameArea.ballStuck) {
-            gameArea.ballStuck = false
+        if (event.key === Qt.Key_Space && ball.ballStuck) {
+            ball.ballStuck = false
             event.accepted = true
         }
     }
 
     Keys.onReleased: function(event) {
         if (event.key === Qt.Key_Left)
-            gameArea.leftPressed = false
+            paddle.leftPressed = false
 
         if (event.key === Qt.Key_Right)
-            gameArea.rightPressed = false
+            paddle.rightPressed = false
     }
     \endcode
 
@@ -282,11 +263,11 @@
     \section2 Paddle Movement
 
     \code
-    if (gameArea.leftPressed)
-        paddle.x -= gameArea.paddleSpeed
+    if (paddle.leftPressed)
+        paddle.x -= paddle.paddleSpeed
 
-    if (gameArea.rightPressed)
-        paddle.x += gameArea.paddleSpeed
+    if (paddle.rightPressed)
+        paddle.x += paddle.paddleSpeed
 
     // Clamp inside screen
     if (paddle.x < 0)
@@ -301,7 +282,7 @@
     \section2 Ball Movement (Stuck Mode)
 
     \code
-    if (gameArea.ballStuck) {
+    if (ball.ballStuck) {
         ball.x = paddle.x + paddle.width / 2 - ball.width / 2
         ball.y = paddle.y - ball.height - 2
         return
@@ -313,8 +294,8 @@
     \section2 Ball Movement (Free Mode)
 
     \code
-    ball.x += gameArea.ballSpeedX
-    ball.y += gameArea.ballSpeedY
+    ball.x += ball.ballSpeedX
+    ball.y += ball.ballSpeedY
     \endcode
 
     Each frame, the ball moves by its speed values in both axes.
@@ -325,11 +306,11 @@
 
     \code
     if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
-        gameArea.ballSpeedX *= -1
+        ball.ballSpeedX *= -1
 
     if (ball.y <= 0) {
         ball.y = 1
-        gameArea.ballSpeedY *= -1
+        ball.ballSpeedY *= -1
     }
     \endcode
 
@@ -342,7 +323,7 @@
     if (ball.y + ball.height >= paddle.y &&
         ball.x + ball.width >= paddle.x &&
         ball.x <= paddle.x + paddle.width) {
-        gameArea.ballSpeedY *= -1
+        ball.ballSpeedY *= -1
     }
     \endcode
 
@@ -353,7 +334,7 @@
 
     \code
     if (ball.y > gameArea.height) {
-        gameArea.ballStuck = true
+        ball.ballStuck = true
     }
     \endcode
 
@@ -371,7 +352,7 @@
                 ball.y + ball.height > item.y) {
 
                 item.destroyed = true
-                gameArea.ballSpeedY *= -1
+                ball.ballSpeedY *= -1
                 break
             }
         }
@@ -394,6 +375,8 @@
         \li Use \b{Left} and \b{Right} arrow keys to move the paddle.
         \li Destroy all bricks to win!
     \endlist
+
+    \image arcanoid.png
 
     \section1 Next Steps
 

@@ -1,15 +1,13 @@
 /*!
     \page part2.html
-    \title Arcanoid Game Tutorial (Felgo + Qt Quick)
-    \meta description A complete tutorial explaining how to build a simple Arkanoid-style game using Felgo GameWindow and Qt Quick.
-
-    This tutorial walks you through building a classic brick-breaker game from scratch
-    using \l{https://felgo.com}{Felgo} and Qt Quick. By the end, you will have a fully
-    playable Arcanoid game with a paddle, a bouncing ball, and destructible bricks.
+    \title Arcanoid Game Tutorial - Part 2: Score
 
     \tableofcontents
 
-    \section1 Step 1: Adding Score
+    In this part of the tutorial, we will extend our Arcanoid game by adding a score counter
+    that increments every time a brick is destroyed.
+
+    \section1 Step 1: Adding Score Counter
 
     Now we will extend the game by adding score counter.
 
@@ -67,6 +65,6 @@
         \li Destroy all bricks to win!
     \endlist
 
-    \image arcanoid.png
+    \image arcanoid_p2_score.png
 
 */

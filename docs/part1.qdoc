@@ -1,13 +1,12 @@
 /*!
     \page part1.html
-    \title Arcanoid Game Tutorial (Felgo + Qt Quick)
-    \meta description A complete tutorial explaining how to build a simple Arkanoid-style game using Felgo GameWindow and Qt Quick.
-
-    This tutorial walks you through building a classic brick-breaker game from scratch
-    using \l{https://felgo.com}{Felgo} and Qt Quick. By the end, you will have a fully
-    playable Arcanoid game with a paddle, a bouncing ball, and destructible bricks.
+    \title Arcanoid Game Tutorial - Part 1: Basic Game
 
     \tableofcontents
+
+    In this tutorial, we will build the core gameplay of an Arcanoid-style game.
+    We will create a paddle, a bouncing ball, and a grid of bricks to break. 
+    The game will be fully playable, and you can extend it with additional features in Part 2.
 
     \section1 Prerequisites
 

@@ -1,0 +1,216 @@
+/*!
+    \mainpage Arcanoid Game Tutorial
+
+    Welcome to Arcanoid documentation.
+*/
+
+import Felgo 4.0
+import QtQuick 2.0
+
+GameWindow {
+    id: gameWindow
+
+    activeScene: scene
+
+    // the size of the Window can be changed at runtime by pressing Ctrl (or Cmd on Mac) + the number keys 1-8
+    // the content of the logical scene size (480x320 for landscape mode by default) gets scaled to the window size based on the scaleMode
+    // you can set this size to any resolution you would like your project to start with, most of the times the one of your main target device
+    // this resolution is for iPhone 4 & iPhone 4S
+    screenWidth: 960
+    screenHeight: 640
+
+    Scene {
+        id: scene
+
+        // the "logical size" - the scene content is auto-scaled to match the GameWindow size
+        width: 480
+        height: 320
+
+        focus: true   // IMPORTANT: enables key handling
+        Component.onCompleted: forceActiveFocus()
+
+        Rectangle {
+            id: gameArea
+            anchors.fill: parent
+            color: "black"
+
+            // game variables
+            property int score: 0
+
+            // Score display
+            Text {
+                text: "Score: " + gameArea.score
+                color: "white"
+                font.pixelSize: 14
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: 2
+            }
+
+            // Paddle
+            Rectangle {
+                id: paddle
+                width: 100
+                height: 15
+                color: "white"
+                radius: 5
+                y: parent.height - 30
+                x: parent.width / 2 - width / 2
+
+                /*MouseArea {
+                    anchors.fill: parent
+                    drag.target: paddle
+                    drag.axis: Drag.XAxis
+                    drag.minimumX: 0
+                    drag.maximumX: gameArea.width - paddle.width
+                }*/
+
+                property real paddleSpeed: 6
+                property bool leftPressed: false
+                property bool rightPressed: false
+            }
+
+            // Ball
+            Rectangle {
+                id: ball
+                width: 12
+                height: 12
+                radius: 6
+                color: "red"
+                x: parent.width / 2
+                y: parent.height / 2
+
+                property real ballSpeedX: 3
+                property real ballSpeedY: 3
+                property bool ballStuck: true
+            }
+
+            // Bricks
+            Repeater {
+                id: bricks
+                model: bricks.cols * bricks.rows
+
+                property int cols: 10
+                property int rows: 3
+                property real brickSpacing: 4
+                property real brickWidth: (gameArea.width - (cols + 1) * brickSpacing) / cols
+                property real brickHeight: 20
+
+                Rectangle {
+                    width: bricks.brickWidth
+                    height: bricks.brickHeight
+
+                    color: "steelblue"
+                    border.color: "white"
+
+                    property int col: index % bricks.cols
+                    property int row: Math.floor(index / bricks.cols)
+
+                    x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
+                    y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing) + 20
+
+                    property bool destroyed: false
+                    visible: !destroyed
+                }
+            }
+
+            Timer {
+                interval: 16
+                running: true
+                repeat: true
+
+                onTriggered: {
+                    // Paddle movement
+                    if (paddle.leftPressed)
+                        paddle.x -= paddle.paddleSpeed
+
+                    if (paddle.rightPressed)
+                        paddle.x += paddle.paddleSpeed
+
+                    // Clamp inside screen
+                    if (paddle.x < 0)
+                        paddle.x = 0
+
+                    if (paddle.x + paddle.width > gameArea.width)
+                        paddle.x = gameArea.width - paddle.width
+
+
+
+                    // Ball movement
+                    if (ball.ballStuck) {
+                        ball.x = paddle.x + paddle.width / 2 - ball.width / 2
+                        ball.y = paddle.y - ball.height - 2
+                        return
+                    }
+
+                    // Move ball
+                    ball.x += ball.ballSpeedX
+                    ball.y += ball.ballSpeedY
+
+                    // Walls
+                    if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
+                        ball.ballSpeedX *= -1
+
+                    if (ball.y <= 0){
+                        ball.y = 1
+                        ball.ballSpeedY *= -1
+                    }
+
+                    // Paddle collision
+                    if (ball.y + ball.height >= paddle.y &&
+                        ball.x + ball.width >= paddle.x &&
+                        ball.x <= paddle.x + paddle.width) {
+                        ball.ballSpeedY *= -1
+                    }
+
+                    // Bottom → reset and stick again
+                    if (ball.y > gameArea.height) {
+                        ball.ballStuck = true
+                    }
+
+                    // Brick collisions
+                    for (let i = 0; i < gameArea.children.length; i++) {
+                        let item = gameArea.children[i]
+                        if (item.destroyed !== undefined && !item.destroyed) {
+                            if (ball.x < item.x + item.width &&
+                                ball.x + ball.width > item.x &&
+                                ball.y < item.y + item.height &&
+                                ball.y + ball.height > item.y) {
+
+                                item.destroyed = true
+                                ball.ballSpeedY *= -1
+
+                                // increment score
+                                gameArea.score += 10
+
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Left)
+                paddle.leftPressed = true
+
+            if (event.key === Qt.Key_Right)
+                paddle.rightPressed = true
+
+            if (event.key === Qt.Key_Space && ball.ballStuck) {
+                ball.ballStuck = false
+                event.accepted = true
+            }
+        }
+
+        Keys.onReleased: function(event) {
+            if (event.key === Qt.Key_Left)
+                paddle.leftPressed = false
+
+            if (event.key === Qt.Key_Right)
+                paddle.rightPressed = false
+        }
+    }
+}

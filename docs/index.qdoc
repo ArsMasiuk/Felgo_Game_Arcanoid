@@ -1,0 +1,20 @@
+/*!
+    \page index.html
+    \title Arcanoid Game Tutorial
+
+    \brief Step-by-step guide to building an Arcanoid game.
+
+    Welcome to the Arcanoid tutorial series.
+
+    This tutorial is split into multiple parts:
+
+    \section1 Tutorials
+
+    \list
+        \li \l{part1.html}{Part 1: Basic Game}
+        \li \l{part2.html}{Part 2: Adding Score}
+    \endlist
+
+    Start with Part 1 to build the core gameplay.
+*/
+

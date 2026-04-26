@@ -34,19 +34,6 @@ GameWindow {
             anchors.fill: parent
             color: "black"
 
-            // game variables
-            property int score: 0
-
-            // Score display
-            Text {
-                text: "Score: " + gameArea.score
-                color: "white"
-                font.pixelSize: 14
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.margins: 2
-            }
-
             // Paddle
             Rectangle {
                 id: paddle
@@ -107,7 +94,7 @@ GameWindow {
                     property int row: Math.floor(index / bricks.cols)
 
                     x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
-                    y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing) + 20
+                    y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing)
 
                     property bool destroyed: false
                     visible: !destroyed
@@ -179,10 +166,6 @@ GameWindow {
 
                                 item.destroyed = true
                                 ball.ballSpeedY *= -1
-
-                                // increment score
-                                gameArea.score += 10
-
                                 break
                             }
                         }

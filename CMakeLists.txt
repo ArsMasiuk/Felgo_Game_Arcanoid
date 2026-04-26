@@ -92,4 +92,9 @@ add_custom_target(docs
             ${CMAKE_CURRENT_SOURCE_DIR}/docs/arcanoid.qdocconf
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating documentation with QDoc"
+
+    SOURCES
+        docs/arcanoid.qdoc
+        docs/arcanoid.qdocconf
+        docs/style.css
 )

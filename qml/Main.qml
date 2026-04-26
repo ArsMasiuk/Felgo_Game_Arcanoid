@@ -1,3 +1,9 @@
+/*!
+    \mainpage Arcanoid Game Tutorial
+
+    Welcome to Arcanoid documentation.
+*/
+
 import Felgo 4.0
 import QtQuick 2.0
 
@@ -23,27 +29,6 @@ GameWindow {
         focus: true   // IMPORTANT: enables key handling
         Component.onCompleted: forceActiveFocus()
 
-        Keys.onPressed: function(event) {
-            if (event.key === Qt.Key_Left)
-                gameArea.leftPressed = true
-
-            if (event.key === Qt.Key_Right)
-                gameArea.rightPressed = true
-
-            if (event.key === Qt.Key_Space && gameArea.ballStuck) {
-                gameArea.ballStuck = false
-                event.accepted = true
-            }
-        }
-
-        Keys.onReleased: function(event) {
-            if (event.key === Qt.Key_Left)
-                gameArea.leftPressed = false
-
-            if (event.key === Qt.Key_Right)
-                gameArea.rightPressed = false
-        }
-
         Rectangle {
             id: gameArea
             anchors.fill: parent
@@ -53,10 +38,6 @@ GameWindow {
             property real ballSpeedX: 3
             property real ballSpeedY: 3
             property bool ballStuck: true
-
-            property real paddleSpeed: 6
-            property bool leftPressed: false
-            property bool rightPressed: false
 
             property int score: 0
 
@@ -85,6 +66,10 @@ GameWindow {
                     drag.minimumX: 0
                     drag.maximumX: gameArea.width - paddle.width
                 }*/
+
+                property real paddleSpeed: 6
+                property bool leftPressed: false
+                property bool rightPressed: false
             }
 
             // Ball
@@ -127,11 +112,11 @@ GameWindow {
 
                 onTriggered: {
                     // Paddle movement
-                    if (gameArea.leftPressed)
-                        paddle.x -= gameArea.paddleSpeed
+                    if (paddle.leftPressed)
+                        paddle.x -= paddle.paddleSpeed
 
-                    if (gameArea.rightPressed)
-                        paddle.x += gameArea.paddleSpeed
+                    if (paddle.rightPressed)
+                        paddle.x += paddle.paddleSpeed
 
                     // Clamp inside screen
                     if (paddle.x < 0)
@@ -195,6 +180,28 @@ GameWindow {
                     }
                 }
             }
+        }
+
+
+        Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Left)
+                paddle.leftPressed = true
+
+            if (event.key === Qt.Key_Right)
+                paddle.rightPressed = true
+
+            if (event.key === Qt.Key_Space && gameArea.ballStuck) {
+                gameArea.ballStuck = false
+                event.accepted = true
+            }
+        }
+
+        Keys.onReleased: function(event) {
+            if (event.key === Qt.Key_Left)
+                paddle.leftPressed = false
+
+            if (event.key === Qt.Key_Right)
+                paddle.rightPressed = false
         }
     }
 }

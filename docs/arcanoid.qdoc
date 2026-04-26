@@ -1,194 +1,410 @@
 /*!
     \page arcanoid.html
     \title Arcanoid Game Tutorial (Felgo + Qt Quick)
+    \meta description A complete tutorial explaining how to build a simple Arkanoid-style game using Felgo GameWindow and Qt Quick.
 
-    \brief A complete tutorial explaining how to build a simple Arkanoid-style game
-    using Felgo GameWindow and Qt Quick.
+    This tutorial walks you through building a classic brick-breaker game from scratch
+    using \l{https://felgo.com}{Felgo} and Qt Quick. By the end, you will have a fully
+    playable Arcanoid game with a paddle, a bouncing ball, and destructible bricks.
 
-    This tutorial is based on a working QML implementation of a brick breaker game.
+    \tableofcontents
 
-    \section1 Overview
+    \section1 Prerequisites
 
-    The game consists of:
+    Before starting, make sure you have:
+
     \list
-        \li A paddle controlled by keyboard input
-        \li A bouncing ball
-        \li A grid of destructible bricks
-        \li A simple physics update loop using a Timer
+        \li \l{https://felgo.com/download}{Felgo SDK} installed (includes Qt 6.8+)
+        \li Basic familiarity with QML syntax
+        \li A text editor or IDE such as Qt Creator or Visual Studio
     \endlist
 
-    The game is implemented using:
-    \list
-        \li Felgo GameWindow
-        \li Qt Quick Scene
-        \li QML Rectangle objects
-        \li Timer-based game loop (no physics engine)
-    \endlist
+    \section1 Step 1: Create the Game Window
 
-    \section1 Game Window Setup
-
-    The root element is a Felgo GameWindow:
+    Every Felgo game starts with a \c GameWindow. This is the top-level element that
+    manages the application window and scaling.
 
     \code
+    import Felgo 4.0
+    import QtQuick 2.0
+
     GameWindow {
+        id: gameWindow
+        activeScene: scene
         screenWidth: 960
         screenHeight: 640
     }
     \endcode
 
-    The game uses a logical resolution of 480x320 which is scaled automatically.
-
-    \section1 Scene and Input Handling
-
-    The Scene handles keyboard input:
-
     \list
-        \li Left arrow → move paddle left
-        \li Right arrow → move paddle right
-        \li Space → launch ball
+        \li \c screenWidth and \c screenHeight set the actual window size in pixels.
+        \li \c activeScene tells Felgo which Scene to display.
     \endlist
 
-    Example:
+    \section1 Step 2: Add a Scene
+
+    Inside the \c GameWindow, add a \c Scene. The scene defines a \e{logical size} that
+    auto-scales to fit the window.
+
+    \code
+    Scene {
+        id: scene
+        width: 480
+        height: 320
+
+        focus: true
+        Component.onCompleted: forceActiveFocus()
+    }
+    \endcode
+
+    \list
+        \li The logical size is 480×320. Felgo scales this to the actual window size.
+        \li \c{focus: true} and \c forceActiveFocus() are \b required to receive keyboard input.
+    \endlist
+
+    \section1 Step 3: Set Up the Game Area
+
+    Add a black \c Rectangle that fills the scene. This acts as the game area and holds
+    all the game state properties.
+
+    \code
+    Rectangle {
+        id: gameArea
+        anchors.fill: parent
+        color: "black"
+
+        property real ballSpeedX: 3
+        property real ballSpeedY: 3
+        property bool ballStuck: true
+
+        property real paddleSpeed: 6
+        property bool leftPressed: false
+        property bool rightPressed: false
+
+        property int score: 0
+
+        property int cols: 10
+        property int rows: 3
+        property real brickSpacing: 4
+
+        property real brickWidth: (width - (cols + 1) * brickSpacing) / cols
+        property real brickHeight: 20
+    }
+    \endcode
+
+    Key properties:
+
+    \table
+        \header
+            \li Property
+            \li Purpose
+        \row
+            \li \c ballSpeedX, \c ballSpeedY
+            \li Ball velocity in pixels per frame
+        \row
+            \li \c ballStuck
+            \li When \c true, the ball stays attached to the paddle
+        \row
+            \li \c paddleSpeed
+            \li How many pixels the paddle moves per frame
+        \row
+            \li \c cols, \c rows
+            \li Grid dimensions for brick layout
+        \row
+            \li \c brickWidth
+            \li Calculated automatically to fill the available width evenly
+    \endtable
+
+    \section1 Step 4: Create the Paddle
+
+    The paddle is a simple white rounded rectangle near the bottom of the screen.
+
+    \code
+    Rectangle {
+        id: paddle
+        width: 100
+        height: 15
+        color: "white"
+        radius: 5
+        y: parent.height - 30
+        x: parent.width / 2 - width / 2
+    }
+    \endcode
+
+    The paddle starts centered horizontally. It will be moved by keyboard input
+    (handled in Step 7).
+
+    To make the paddle movable, lets extend \c paddle by adding following properties now:
+
+    \code
+    Rectangle {
+        id: paddle
+        ...
+
+        property real paddleSpeed: 6
+        property bool leftPressed: false
+        property bool rightPressed: false
+    }
+    \endcode
+
+    \table
+        \header
+            \li Property
+            \li Purpose
+        \row
+            \li \c leftPressed
+            \li Left button has been pressed -> paddle moves to the left
+        \row
+            \li \c rightPressed
+            \li Right button has been pressed -> paddle moves to the right
+        \row
+            \li \c paddleSpeed
+            \li How many pixels the paddle moves per frame
+    \endtable
+
+
+    \section1 Step 5: Create the Ball
+
+    The ball is a small red circle.
+
+    \code
+    Rectangle {
+        id: ball
+        width: 12
+        height: 12
+        radius: 6
+        color: "red"
+        x: parent.width / 2
+        y: parent.height / 2
+    }
+    \endcode
+
+    \note In QML, you create a circle by setting \c radius to half of \c width and \c height.
+
+    Lets add some basic properties to the \c ball as well:
+
+    \code
+    Rectangle {
+        id: ball
+
+        ...
+        property real ballSpeedX: 3
+        property real ballSpeedY: 3
+        property bool ballStuck: true
+    }
+    \endcode
+
+    \table
+        \header
+            \li Property
+            \li Purpose
+        \row
+            \li \c ballSpeedX, \c ballSpeedY
+            \li Ball velocity in pixels per frame
+        \row
+            \li \c ballStuck
+            \li When \c true, the ball stays attached to the paddle
+    \endtable
+
+
+    \section1 Step 6: Build the Brick Grid
+
+    Use a \c Repeater to generate a grid of bricks. Each brick calculates its own
+    column and row from its \c index.
+
+    \code
+    Repeater {
+        model: gameArea.cols * gameArea.rows
+
+        Rectangle {
+            width: gameArea.brickWidth
+            height: gameArea.brickHeight
+            color: "steelblue"
+            border.color: "white"
+
+            property int col: index % gameArea.cols
+            property int row: Math.floor(index / gameArea.cols)
+
+            x: gameArea.brickSpacing + col * (gameArea.brickWidth + gameArea.brickSpacing)
+            y: gameArea.brickSpacing + row * (gameArea.brickHeight + gameArea.brickSpacing)
+
+            property bool destroyed: false
+            visible: !destroyed
+        }
+    }
+    \endcode
+
+    How the grid works:
+    \list
+        \li The \c model produces \c{cols × rows} items (10 × 3 = 30 bricks).
+        \li Each brick computes its \c col and \c row from the flat \c index.
+        \li The \c x and \c y positions include spacing between bricks.
+        \li When \c destroyed is set to \c true, the brick becomes invisible.
+    \endlist
+
+    \section1 Step 7: Handle Keyboard Input
+
+    Add key handlers to the \c Scene to control the paddle and launch the ball.
 
     \code
     Keys.onPressed: function(event) {
         if (event.key === Qt.Key_Left)
             gameArea.leftPressed = true
+
+        if (event.key === Qt.Key_Right)
+            gameArea.rightPressed = true
+
+        if (event.key === Qt.Key_Space && gameArea.ballStuck) {
+            gameArea.ballStuck = false
+            event.accepted = true
+        }
+    }
+
+    Keys.onReleased: function(event) {
+        if (event.key === Qt.Key_Left)
+            gameArea.leftPressed = false
+
+        if (event.key === Qt.Key_Right)
+            gameArea.rightPressed = false
     }
     \endcode
 
-    \section1 Game Area Variables
-
-    The game logic is stored inside a Rectangle called \c gameArea.
-
-    It contains:
-
     \list
-        \li Ball speed (X and Y)
-        \li Paddle movement speed
-        \li Score tracking
-        \li Brick grid configuration
+        \li \b{Left/Right arrows} set boolean flags that the game loop reads each frame.
+        \li \b{Space} launches the ball by setting \c ballStuck to \c false.
     \endlist
 
-    Example:
+    \section1 Step 8: Implement the Game Loop
+
+    The game loop is a \c Timer that fires every 16 ms (~60 FPS). It handles all
+    movement and collision logic.
+
+    \section2 Paddle Movement
 
     \code
-    property real ballSpeedX: 3
-    property real ballSpeedY: 3
-    property bool ballStuck: true
+    if (gameArea.leftPressed)
+        paddle.x -= gameArea.paddleSpeed
+
+    if (gameArea.rightPressed)
+        paddle.x += gameArea.paddleSpeed
+
+    // Clamp inside screen
+    if (paddle.x < 0)
+        paddle.x = 0
+
+    if (paddle.x + paddle.width > gameArea.width)
+        paddle.x = gameArea.width - paddle.width
     \endcode
 
-    \section1 Paddle
+    The paddle moves based on the key flags and is clamped so it cannot leave the screen.
 
-    The paddle is a simple Rectangle:
+    \section2 Ball Movement (Stuck Mode)
 
     \code
-    Rectangle {
-        width: 100
-        height: 15
+    if (gameArea.ballStuck) {
+        ball.x = paddle.x + paddle.width / 2 - ball.width / 2
+        ball.y = paddle.y - ball.height - 2
+        return
     }
     \endcode
 
-    It is moved using keyboard input inside the game loop.
+    While stuck, the ball sits centered on top of the paddle. Pressing Space releases it.
 
-    \section1 Ball
-
-    The ball is a small red rectangle:
+    \section2 Ball Movement (Free Mode)
 
     \code
-    Rectangle {
-        width: 12
-        height: 12
-        radius: 6
+    ball.x += gameArea.ballSpeedX
+    ball.y += gameArea.ballSpeedY
+    \endcode
+
+    Each frame, the ball moves by its speed values in both axes.
+
+    \section1 Step 9: Add Collision Detection
+
+    \section2 Ball vs. Walls
+
+    \code
+    if (ball.x <= 0 || ball.x + ball.width >= gameArea.width)
+        gameArea.ballSpeedX *= -1
+
+    if (ball.y <= 0) {
+        ball.y = 1
+        gameArea.ballSpeedY *= -1
     }
     \endcode
 
-    Behavior:
-    \list
-        \li Sticks to paddle before launch
-        \li Moves using velocity (ballSpeedX/Y)
-        \li Bounces on walls and paddle
-    \endlist
+    The ball bounces off the left, right, and top walls by reversing the appropriate
+    speed component.
 
-    \section1 Bricks System
-
-    Bricks are generated using a Repeater:
+    \section2 Ball vs. Paddle
 
     \code
-    Repeater {
-        model: gameArea.cols * gameArea.rows
+    if (ball.y + ball.height >= paddle.y &&
+        ball.x + ball.width >= paddle.x &&
+        ball.x <= paddle.x + paddle.width) {
+        gameArea.ballSpeedY *= -1
     }
     \endcode
 
-    Each brick:
-    \list
-        \li Has position based on row/column
-        \li Can be destroyed on collision
-        \li Becomes invisible when hit
-    \endlist
+    This is a simple AABB (axis-aligned bounding box) collision check. When the ball
+    overlaps the paddle, its vertical direction is reversed.
 
-    \section1 Game Loop
-
-    The game uses a Timer running at ~60 FPS:
+    \section2 Ball vs. Bottom Edge
 
     \code
-    Timer {
-        interval: 16
-        running: true
-        repeat: true
+    if (ball.y > gameArea.height) {
+        gameArea.ballStuck = true
     }
     \endcode
 
-    This loop handles:
-    \list
-        \li Paddle movement
-        \li Ball physics
-        \li Collision detection
-        \li Brick destruction
+    If the ball falls below the screen, it reattaches to the paddle (like losing a life).
+
+    \section2 Ball vs. Bricks
+
+    \code
+    for (let i = 0; i < gameArea.children.length; i++) {
+        let item = gameArea.children[i]
+        if (item.destroyed !== undefined && !item.destroyed) {
+            if (ball.x < item.x + item.width &&
+                ball.x + ball.width > item.x &&
+                ball.y < item.y + item.height &&
+                ball.y + ball.height > item.y) {
+
+                item.destroyed = true
+                gameArea.ballSpeedY *= -1
+                break
+            }
+        }
+    }
+    \endcode
+
+    The loop iterates over all children of \c gameArea. It identifies bricks by checking
+    for the \c destroyed property. On collision:
+    \list 1
+        \li The brick is marked as \c destroyed (becomes invisible).
+        \li The ball's vertical speed is reversed.
+        \li The loop breaks so only one brick is destroyed per frame.
     \endlist
 
-    \section1 Collision System
+    \section1 Step 10: Run the Game
 
-    The collision logic includes:
-
-    \section2 Ball vs Walls
-    Ball bounces when hitting left, right, or top walls.
-
-    \section2 Ball vs Paddle
-    If the ball touches the paddle, Y velocity is reversed.
-
-    \section2 Ball vs Bricks
-    When a collision is detected:
-    \list
-        \li Brick is marked as destroyed
-        \li Ball direction is reversed
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Use \b{Left} and \b{Right} arrow keys to move the paddle.
+        \li Destroy all bricks to win!
     \endlist
 
-    \section1 Game Reset
+    \section1 Next Steps
 
-    If the ball falls below the screen:
-
-    \list
-        \li Ball is reset to paddle
-        \li Ball becomes stuck again
-    \endlist
-
-    \section1 Conclusion
-
-    You now have a working Arcanoid-style game built with:
+    Here are some ideas to extend the game:
 
     \list
-        \li Felgo GameWindow
-        \li Qt Quick Scene
-        \li Timer-based physics loop
-        \li Simple collision detection system
-    \endlist
-
-    Next improvements could include:
-    \list
-        \li Score display UI
-        \li Sound effects
-        \li Levels system
-        \li Power-ups
+        \li Add a \b{score counter} using the existing \c{gameArea.score} property and a \c Text element.
+        \li Add \b{lives} — track how many times the ball falls and show a game-over screen.
+        \li Add \b{colored brick rows} with different point values.
+        \li Implement \b{angle-based bouncing} — change \c ballSpeedX based on where the ball hits the paddle.
+        \li Add \b{sound effects} using the Felgo \c GameSoundEffect type.
+        \li Add a \b{win condition} that detects when all bricks are destroyed.
     \endlist
 */

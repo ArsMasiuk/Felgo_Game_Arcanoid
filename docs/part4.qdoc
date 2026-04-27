@@ -65,16 +65,96 @@
         }
     \endcode
 
+
     \section1 Step 4: Run the Game
 
-    \list 1
-        \li Build and run the project.
-        \li Press \b{Space} to launch the ball.
-        \li Use \b{Left} and \b{Right} arrow keys to move the paddle.
-        \li Watch the lives counter decrease each time you miss the ball.
-        \li Try to destroy all bricks before running out of lives!
-    \endlist
+    Compile and run the game. You should see the lives counter in the top-right corner.
 
     \image arcanoid_p4_lives.png
 
+
+    \section1 Step 5: Add Game Over Screen
+
+    When the player runs out of lives, we want to show a game over message and stop the game. 
+    For the game over screen, we use some \c Text elements that are initially hidden and become visible when the game is over.
+    
+    Let's implement this logic in the GameOverScreen component.
+    For this, we will create a new QML file named \c GameOverScreen.qml in the \c qml directory. 
+    This component will display a "Game Over" message and the final score when the player loses all lives. 
+    It will also have a signal to request a game restart.
+
+    \section1 Step 6: Add Game Over Logic
+
+    Now add gameOver property to the \c gameArea to track whether the game is over:
+
+    \code
+        property bool gameOver: false
+    \endcode
+
+    Then we will add a \c GameOverScreen component to the main game area and show it when the player loses all lives.
+    Let's put it inside gameArea (after the Timer, before closing }):
+
+    \code
+        // Game Over screen
+        GameOverScreen {
+            id: gameOverScreen
+            score: gameArea.score
+            visible: gameArea.gameOver
+
+            onRestartRequested: {
+                gameArea.score = 0
+                gameArea.lives = 5
+                gameArea.gameOver = false
+                ball.ballStuck = true
+                ball.ballSpeedX = 3
+                ball.ballSpeedY = 3
+                paddle.x = gameArea.width / 2 - paddle.width / 2
+
+                for (let i = 0; i < bricks.count; i++) {
+                    let item = bricks.itemAt(i)
+                    if (item) {
+                        let row = Math.floor(i / bricks.cols)
+                        item.hitPoints = row === 0 ? 2 : 1
+                        item.destroyed = false
+                    }
+                }
+            }
+        }
+    \endcode
+
+    When the game is over, stop the \c Timer by setting its \c running property to:
+
+    \code
+        running: !gameArea.gameOver
+    \endcode
+
+
+    To complete the implementation, we need to set the \c gameOver property to \c true when the player loses all lives.
+    Put the following code in the place of the \c TODO comment in the lives losing logic:
+
+    \code
+        gameArea.gameOver = true
+    \endcode
+
+    The last step is to reset the game state when the player requests a restart by pressing Space button.
+    Update Keys.onPressed with the following code:
+
+    \code
+        if (event.key === Qt.Key_Space) {
+            if (gameArea.gameOver) {
+                gameOverScreen.restartRequested()
+                event.accepted = true
+            } else if (ball.ballStuck) {
+                ball.ballStuck = false
+                event.accepted = true
+            }
+        }
+    \endcode
+
+
+    \section1 Step 6: Run the Game
+
+    Compile and run the game again. You will see "Game Over" screen after loosing all balls.
+
+    \image arcanoid_p4_gameover.png
 */

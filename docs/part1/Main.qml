@@ -44,14 +44,6 @@ GameWindow {
                 y: parent.height - 30
                 x: parent.width / 2 - width / 2
 
-                /*MouseArea {
-                    anchors.fill: parent
-                    drag.target: paddle
-                    drag.axis: Drag.XAxis
-                    drag.minimumX: 0
-                    drag.maximumX: gameArea.width - paddle.width
-                }*/
-
                 property real paddleSpeed: 6
                 property bool leftPressed: false
                 property bool rightPressed: false

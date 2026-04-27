@@ -1,0 +1,129 @@
+/*!
+    \page part3.html
+    \title Arcanoid Game Tutorial - Part 3: Hit Points
+
+    \tableofcontents
+
+    In this part of the tutorial, we will extend our Arcanoid game by adding hit points to the bricks.
+    Every hit will decrease hit point value of the brick. The brick is destroyed when its hit counter drops to 0.
+
+    \section1 Step 1: Extracting Brick Logic to Separate File.
+
+    Create a new Brick.qml file and put it next to Main.qml first:
+
+        \code
+        import QtQuick 2.0
+
+        Rectangle {
+            id: brick
+
+            border.color: "white"
+
+            property int hitPoints: 1
+            property bool destroyed: false
+
+            color: hitPoints >= 2 ? "magenta" : "steelblue"
+            visible: !destroyed
+
+            function hit() {
+                hitPoints -= 1
+
+                if (hitPoints <= 0) {
+                    destroyed = true
+                    return 10
+                }
+
+                if (hitPoints >= 1)
+                    return 5
+
+                return 0
+            }
+        }
+    \endcode
+
+    Here we have defined a \c hitPoints variable which determines how many hits the brick can take before it gets destroyed. 
+    
+    We have also added a \c hit() function which will decrease the hit points and return the score value for the hit 
+    (10 points if the brick was destroyed, 5 if there are still hitPoints left, and 0 otherwise).
+
+    Additionally, we set the color of the brick to magenta if it has 2 or more hit points, 
+    and change it to steelblue otherwise.
+
+
+    \section1 Step 2: Updating Main.qml
+
+    Update the Repeater in Main.qml to use the new Brick component so that the 1st row of bricks has 2 hit points and the rest have 1 hit point:
+
+    \code
+        // Bricks
+        Repeater {
+            id: bricks
+            model: bricks.cols * bricks.rows
+
+            property int cols: 10
+            property int rows: 3
+            property real brickSpacing: 4
+            property real brickWidth: (gameArea.width - (cols + 1) * brickSpacing) / cols
+            property real brickHeight: 20
+
+            Brick {
+                width: bricks.brickWidth
+                height: bricks.brickHeight
+
+                property int col: index % bricks.cols
+                property int row: Math.floor(index / bricks.cols)
+
+                hitPoints: row === 0 ? 2 : 1
+
+                x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
+                y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing) + 20
+            }
+        }
+    \endcode
+
+    \section1 Step 3: Updating Collision Logic
+
+    To keep the code clean, we will add a \c collides() function to the Brick component in Brick.qml
+    which will check if the ball is colliding with the brick.
+
+    bx, by, bw, bh parameters of the function represent the x and y coordinates of the ball and its width and height respectively.
+
+    \code
+        function collides(bx, by, bw, bh) {
+            if (destroyed) 
+                return false
+
+            return bx < brick.x + brick.width &&
+                   bx + bw > brick.x &&
+                   by < brick.y + brick.height &&
+                   by + bh > brick.y
+        }
+    \endcode
+
+    As the last step, update collision logic in the \c Timer to use the \c collide() function to check if
+    the brick was hit and afterwards \c hit() function to increment the score:
+
+    \code
+        // Brick collisions
+        for (let i = 0; i < bricks.count; i++) {
+            let item = bricks.itemAt(i)
+            if (item && item.collides(ball.x, ball.y, ball.width, ball.height)) {
+                gameArea.score += item.hit()
+                ball.ballSpeedY *= -1
+                break
+            }
+        }
+    \endcode
+
+    \section1 Step 4: Run the Game
+
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Use \b{Left} and \b{Right} arrow keys to move the paddle.
+        \li Destroy all bricks to win!
+    \endlist
+
+    \image arcanoid_p3_hitpoints.png
+
+*/

@@ -19,6 +19,7 @@
     \list
         \li \l{part1.html}{Part 1: Basic Game}
         \li \l{part2.html}{Part 2: Adding Score}
+        \li \l{part3.html}{Part 3: Adding Hit Points}
     \endlist
 
     Start with Part 1 to build the core gameplay.

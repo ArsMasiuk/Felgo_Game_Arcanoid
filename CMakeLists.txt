@@ -75,8 +75,6 @@ target_link_libraries(Arcanoid PRIVATE Felgo)
 # target_link_libraries(Arcanoid PRIVATE FelgoHotReload)
 
 # documentation
-#file(GLOB_RECURSE DocFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} doc/*.qdoc*)
-
 find_program(QDOC_EXECUTABLE
     NAMES qdoc
     PATHS "C:/Felgo/Felgo/mingw_64/bin"
@@ -94,7 +92,10 @@ add_custom_target(docs
     COMMENT "Generating documentation with QDoc"
 
     SOURCES
-        docs/arcanoid.qdoc
+        docs/index.qdoc
+        docs/part1.qdoc
+        docs/part2.qdoc
+        docs/part3.qdoc
         docs/arcanoid.qdocconf
         docs/style.css
 )

@@ -86,7 +86,7 @@
     To keep the code clean, we will add a \c collides() function to the Brick component in Brick.qml
     which will check if the ball is colliding with the brick.
 
-    bx, by, bw, bh parameters of the function represent the x and y coordinates of the ball and its width and height respectively.
+    \c bx, \c by, \c bw, \c bh parameters of the function represent the x and y coordinates of the ball and its width and height respectively.
 
     \code
         function collides(bx, by, bw, bh) {
@@ -100,7 +100,7 @@
         }
     \endcode
 
-    As the last step, update collision logic in the \c Timer to use the \c collide() function to check if
+    As the last step, update collision logic in the \c Timer to use the \c collides() function to check if
     the brick was hit and afterwards \c hit() function to increment the score:
 
     \code

@@ -76,12 +76,55 @@
     \section1 Step 5: Add Game Over Screen
 
     When the player runs out of lives, we want to show a game over message and stop the game. 
-    For the game over screen, we use some \c Text elements that are initially hidden and become visible when the game is over.
+    For the game over screen, we use a \c Rectangle with some \c Text elements that are initially hidden and become visible when the game is over.
     
     Let's implement this logic in the GameOverScreen component.
     For this, we will create a new QML file named \c GameOverScreen.qml in the \c qml directory. 
     This component will display a "Game Over" message and the final score when the player loses all lives. 
-    It will also have a signal to request a game restart.
+    It will also have a signal \c restartRequested() to request a game restart.
+
+    \code
+        import QtQuick 2.0
+
+        Rectangle {
+            id: gameOverScreen
+
+            anchors.fill: parent
+            color: "#CC000000"
+            visible: false
+
+            property int score: 0
+
+            signal restartRequested()
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 10
+
+                Text {
+                    text: "GAME OVER"
+                    color: "red"
+                    font.pixelSize: 32
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: "Score: " + gameOverScreen.score
+                    color: "white"
+                    font.pixelSize: 18
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: "Press Space to restart"
+                    color: "white"
+                    font.pixelSize: 14
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+        }
+    \endcode
 
     \section1 Step 6: Add Game Over Logic
 
@@ -157,4 +200,50 @@
     Compile and run the game again. You will see "Game Over" screen after loosing all balls.
 
     \image arcanoid_p4_gameover.png
+
+
+    \section1 Step 7: Refactor Game State Initialization
+
+    To make the code cleaner, we can refactor the game state initialization logic into a separate function.
+    Put the following function inside the \c gameArea, next to the existing properties:
+
+    \code
+        // Initialization function to reset the game state
+        function initGame() {
+            score = 0
+            lives = 5
+            gameOver = false
+            ball.ballStuck = true
+            ball.ballSpeedX = 3
+            ball.ballSpeedY = 3
+            paddle.x = gameArea.width / 2 - paddle.width / 2
+            for (let i = 0; i < bricks.count; i++) {
+                let item = bricks.itemAt(i)
+                if (item) {
+                    let row = Math.floor(i / bricks.cols)
+                    item.hitPoints = row === 0 ? 2 : 1
+                    item.destroyed = false
+                }
+            }
+        }
+    \endcode
+
+    Then we can call this function both in the \c onRestartRequested handler of the \c GameOverScreen and in the \c Component.onCompleted handler of the \c gameArea to initialize the game state when the game starts.
+
+    \code
+        (somewhere inside gameArea)
+
+        Component.onCompleted: initGame()
+    \endcode
+
+    \code
+        GameOverScreen {
+            id: gameOverScreen
+            score: gameArea.score
+            visible: gameArea.gameOver
+
+            onRestartRequested: gameArea.initGame()
+        }
+    \endcode
+
 */

@@ -34,10 +34,32 @@ GameWindow {
             anchors.fill: parent
             color: "black"
 
-            // game variables
+            // Game variables
             property int score: 0
             property int lives: 5
             property bool gameOver: false
+
+            // Initialization function to reset the game state
+            function initGame() {
+                score = 0
+                lives = 5
+                gameOver = false
+                ball.ballStuck = true
+                ball.ballSpeedX = 3
+                ball.ballSpeedY = 3
+                paddle.x = gameArea.width / 2 - paddle.width / 2
+
+                for (let i = 0; i < bricks.count; i++) {
+                    let item = bricks.itemAt(i)
+                    if (item) {
+                        let row = Math.floor(i / bricks.cols)
+                        item.hitPoints = row === 0 ? 2 : 1
+                        item.destroyed = false
+                    }
+                }
+            }
+
+            Component.onCompleted: initGame()
 
             // Score display
             Text {
@@ -106,8 +128,6 @@ GameWindow {
 
                     property int col: index % bricks.cols
                     property int row: Math.floor(index / bricks.cols)
-
-                    hitPoints: row === 0 ? 2 : 1
 
                     x: bricks.brickSpacing + col * (bricks.brickWidth + bricks.brickSpacing)
                     y: bricks.brickSpacing + row * (bricks.brickHeight + bricks.brickSpacing) + 20
@@ -188,31 +208,14 @@ GameWindow {
             }
         }
 
-            // Game Over screen
-            GameOverScreen {
-                id: gameOverScreen
-                score: gameArea.score
-                visible: gameArea.gameOver
+        // Game Over screen
+        GameOverScreen {
+            id: gameOverScreen
+            score: gameArea.score
+            visible: gameArea.gameOver
 
-                onRestartRequested: {
-                    gameArea.score = 0
-                    gameArea.lives = 5
-                    gameArea.gameOver = false
-                    ball.ballStuck = true
-                    ball.ballSpeedX = 3
-                    ball.ballSpeedY = 3
-                    paddle.x = gameArea.width / 2 - paddle.width / 2
-
-                    for (let i = 0; i < bricks.count; i++) {
-                        let item = bricks.itemAt(i)
-                        if (item) {
-                            let row = Math.floor(i / bricks.cols)
-                            item.hitPoints = row === 0 ? 2 : 1
-                            item.destroyed = false
-                        }
-                    }
-                }
-            }
+            onRestartRequested: gameArea.initGame()
+        }
 
 
         Keys.onPressed: function(event) {
@@ -224,7 +227,7 @@ GameWindow {
 
             if (event.key === Qt.Key_Space) {
                 if (gameArea.gameOver) {
-                    gameOverScreen.restartRequested()
+                    gameArea.initGame()
                     event.accepted = true
                 } else if (ball.ballStuck) {
                     ball.ballStuck = false

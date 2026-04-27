@@ -36,6 +36,7 @@ GameWindow {
 
             // game variables
             property int score: 0
+            property int lives: 5
 
             // Score display
             Text {
@@ -43,6 +44,16 @@ GameWindow {
                 color: "white"
                 font.pixelSize: 14
                 anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.margins: 2
+            }
+
+            // Lives display
+            Text {
+                text: "Lives: " + gameArea.lives
+                color: "white"
+                font.pixelSize: 14
+                anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: 2
             }
@@ -159,9 +170,16 @@ GameWindow {
                         ball.ballSpeedY *= -1
                     }
 
-                    // Bottom → reset and stick again
+                    // Bottom → lose a life and stick again
                     if (ball.y > gameArea.height) {
-                        ball.ballStuck = true
+                        gameArea.lives -= 1
+                        if (gameArea.lives <= 0) {
+                            gameArea.lives = 0
+                            ball.ballStuck = true
+                            // TODO: show game over screen
+                        } else {
+                            ball.ballStuck = true
+                        }
                     }
 
                     // Brick collisions

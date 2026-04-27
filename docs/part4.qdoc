@@ -1,0 +1,80 @@
+/*!
+    \page part4.html
+    \title Arcanoid Game Tutorial - Part 4: Lives
+
+    \tableofcontents
+
+    In this part of the tutorial, we will add a lives system to our Arcanoid game.
+    The player starts with 5 balls. Each time the ball falls below the screen,
+    one life is lost. When all lives are gone, the game is over.
+
+    \section1 Step 1: Adding Lives Property
+
+    Add a \c lives property to the \c gameArea, next to the existing \c score property:
+
+    \code
+        // game variables
+        property int score: 0
+        property int lives: 5
+    \endcode
+
+    \section1 Step 2: Adding Lives Display
+
+    Add a \c Text element to show the remaining lives in the top-right corner of the
+    game area, next to the existing score display:
+
+    \code
+        // Lives display
+        Text {
+            text: "Lives: " + gameArea.lives
+            color: "white"
+            font.pixelSize: 14
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 2
+        }
+    \endcode
+
+    Now the player can see both the score on the left and the remaining lives on the right.
+
+    \section1 Step 3: Losing a Life
+
+    Previously, when the ball fell below the screen, it was simply reattached to the paddle:
+
+    \code
+        // Bottom → reset and stick again
+        if (ball.y > gameArea.height) {
+            ball.ballStuck = true
+        }
+    \endcode
+
+    Now we need to decrement the lives counter each time this happens. Replace the
+    code above with:
+
+    \code
+        // Bottom → lose a life and stick again
+        if (ball.y > gameArea.height) {
+            gameArea.lives -= 1
+            if (gameArea.lives <= 0) {
+                gameArea.lives = 0
+                ball.ballStuck = true
+                // TODO: show game over screen
+            } else {
+                ball.ballStuck = true
+            }
+        }
+    \endcode
+
+    \section1 Step 4: Run the Game
+
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Use \b{Left} and \b{Right} arrow keys to move the paddle.
+        \li Watch the lives counter decrease each time you miss the ball.
+        \li Try to destroy all bricks before running out of lives!
+    \endlist
+
+    \image arcanoid_p4_lives.png
+
+*/

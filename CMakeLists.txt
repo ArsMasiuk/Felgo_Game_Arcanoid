@@ -96,6 +96,7 @@ add_custom_target(docs
         docs/part1.qdoc
         docs/part2.qdoc
         docs/part3.qdoc
+        docs/part4.qdoc
         docs/arcanoid.qdocconf
         docs/style.css
 )

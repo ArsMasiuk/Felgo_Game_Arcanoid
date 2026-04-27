@@ -4,7 +4,7 @@
 
     \brief Step-by-step guide to building an Arcanoid game.
 
-    \meta description A complete tutorial explaining how to build a simple Arkanoid-style game using Felgo GameWindow and Qt Quick.
+    \meta description A complete tutorial explaining how to build a simple Arcanoid-style game using Felgo GameWindow and Qt Quick.
 
     \section1 Welcome to the Arcanoid tutorial series.
 
@@ -20,6 +20,7 @@
         \li \l{part1.html}{Part 1: Basic Game}
         \li \l{part2.html}{Part 2: Adding Score}
         \li \l{part3.html}{Part 3: Adding Hit Points}
+        \li \l{part4.html}{Part 4: Adding Lives}
     \endlist
 
     Start with Part 1 to build the core gameplay.

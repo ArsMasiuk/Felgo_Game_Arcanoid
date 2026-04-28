@@ -1,0 +1,209 @@
+/*!
+    \page part5.html
+    \title Arcanoid Game Tutorial - Part 5: Brick Effects
+
+    \tableofcontents
+
+    In this part of the tutorial, we will add visual effects to the bricks.
+    When a brick is destroyed, it will fade out and scale up. When a multi-hit
+    brick is hit but not destroyed, it will flash white to give visual feedback.
+
+    \section1 Step 1: Destroy Animation
+
+    When a brick is destroyed, we want it to fade out and grow slightly instead
+    of just disappearing instantly. We achieve this by animating the \c opacity
+    and \c scale properties using \c Behavior.
+
+    Open \c Brick.qml and replace the \c visible binding:
+
+    \code
+        // old:
+        visible: !destroyed
+
+        // new:
+        visible: opacity > 0
+
+        opacity: destroyed ? 0 : 1
+        scale: destroyed ? 1.5 : 1
+
+        Behavior on opacity {
+            NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+        }
+
+        Behavior on scale {
+            NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+        }
+    \endcode
+
+    How it works:
+    \list
+        \li When \c destroyed becomes \c true, \c opacity animates from 1 to 0
+            and \c scale animates from 1 to 1.5 over 200ms.
+        \li \c visible is bound to \c{opacity > 0} so the brick stays visible
+            during the fade-out animation and is only hidden once fully transparent.
+        \li \c{Easing.OutQuad} gives a smooth deceleration effect.
+    \endlist
+
+    \section1 Step 2: Hit Flash Effect
+
+    For multi-hit bricks (like the magenta ones), we want a brief white flash
+    when the brick is hit but not destroyed. This gives the player immediate
+    visual feedback that the hit registered.
+
+    Add a flash overlay \c Rectangle and a \c SequentialAnimation inside
+    \c Brick.qml:
+
+    \code
+        Rectangle {
+            id: flashOverlay
+            anchors.fill: parent
+            color: "white"
+            opacity: 0
+
+            SequentialAnimation {
+                id: flashAnimation
+                NumberAnimation {
+                    target: flashOverlay
+                    property: "opacity"
+                    to: 0.8
+                    duration: 50
+                }
+                NumberAnimation {
+                    target: flashOverlay
+                    property: "opacity"
+                    to: 0
+                    duration: 150
+                }
+            }
+        }
+    \endcode
+
+    How it works:
+    \list
+        \li \c flashOverlay is a white rectangle that covers the entire brick,
+            initially fully transparent (\c{opacity: 0}).
+        \li \c flashAnimation is a two-step animation: first it quickly raises
+            the overlay opacity to 0.8 (50ms), then fades it back to 0 (150ms).
+        \li The total flash duration is 200ms — fast enough to feel snappy.
+    \endlist
+
+    \section1 Step 3: Triggering the Flash
+
+    Now we need to trigger the flash animation in the \c hit() function when the
+    brick survives the hit. Update the \c hit() function in \c Brick.qml:
+
+    \code
+        function hit() {
+            hitPoints -= 1
+
+            if (hitPoints <= 0) {
+                destroyed = true
+                return 10
+            }
+
+            // Flash on non-destroying hit
+            flashAnimation.start()
+
+            if (hitPoints >= 1)
+                return 5
+
+            return 0
+        }
+    \endcode
+
+    The key addition is \c{flashAnimation.start()} which triggers the white flash
+    only when the brick is hit but not destroyed. Destroyed bricks get the
+    fade-out + scale-up effect instead.
+
+    \section1 Step 4: Complete Brick.qml
+
+    After all changes, the complete \c Brick.qml should look like this:
+
+    \code
+        import QtQuick 2.0
+
+        Rectangle {
+            id: brick
+
+            border.color: "white"
+
+            property int hitPoints: 1
+            property bool destroyed: false
+
+            color: hitPoints >= 2 ? "magenta" : "steelblue"
+            visible: opacity > 0
+
+            opacity: destroyed ? 0 : 1
+            scale: destroyed ? 1.5 : 1
+
+            Behavior on opacity {
+                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+            }
+
+            Behavior on scale {
+                NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+            }
+
+            Rectangle {
+                id: flashOverlay
+                anchors.fill: parent
+                color: "white"
+                opacity: 0
+
+                SequentialAnimation {
+                    id: flashAnimation
+                    NumberAnimation {
+                        target: flashOverlay
+                        property: "opacity"
+                        to: 0.8
+                        duration: 50
+                    }
+                    NumberAnimation {
+                        target: flashOverlay
+                        property: "opacity"
+                        to: 0
+                        duration: 150
+                    }
+                }
+            }
+
+            function hit() {
+                hitPoints -= 1
+
+                if (hitPoints <= 0) {
+                    destroyed = true
+                    return 10
+                }
+
+                flashAnimation.start()
+
+                if (hitPoints >= 1)
+                    return 5
+
+                return 0
+            }
+
+            function collides(bx, by, bw, bh) {
+                if (destroyed)
+                    return false
+
+                return bx < brick.x + brick.width &&
+                       bx + bw > brick.x &&
+                       by < brick.y + brick.height &&
+                       by + bh > brick.y
+            }
+        }
+    \endcode
+
+    \section1 Step 5: Run the Game
+
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Hit a magenta brick — you should see a white flash as it turns steelblue.
+        \li Hit a steelblue brick — it should fade out and scale up as it disappears.
+    \endlist
+
+    \image arcanoid_p5_effects.png
+
+*/

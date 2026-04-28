@@ -12,7 +12,9 @@ headerdirs = ../qml ../docs .
 
 # HTML settings
 HTML.stylesheets = style.css
-HTML.extraFiles += style.css
+HTML.headerstyles = \
+    "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">\n"
+HTML.endheader = "</head>\n<body>\n"
 
 # main page
 indexpages = index

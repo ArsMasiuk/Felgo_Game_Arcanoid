@@ -88,8 +88,14 @@ file(GLOB_RECURSE DocFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} docs/*)
 
 add_custom_target(docs
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/docs/html
+    
     COMMAND ${QDOC_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/docs/arcanoid.qdocconf
+    
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/docs/style.css
+            ${CMAKE_CURRENT_SOURCE_DIR}/build/docs/html/style.css
+    
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating documentation with QDoc"
 

@@ -199,12 +199,33 @@ GameWindow {
                     for (let i = 0; i < bricks.count; i++) {
                         let item = bricks.itemAt(i)
                          if (item && item.collides(ball.x, ball.y, ball.width, ball.height)) {
-                            gameArea.score += item.hit()
+                            let points = item.hit()
+                            gameArea.score += points
+                            gameArea.spawnFloatingScore(
+                                item.x + item.width / 2 - 10,
+                                item.y,
+                                points
+                            )
                             ball.ballSpeedY *= -1
                             break
                         }
                     }
                 }
+            }
+
+            // Floating score component
+            Component {
+                id: floatingScoreComponent
+                FloatingScore {}
+            }
+
+            function spawnFloatingScore(px, py, points) {
+                if (points <= 0) return
+                var item = floatingScoreComponent.createObject(gameArea, {
+                    "text": "+" + points,
+                    "startX": px,
+                    "startY": py
+                })
             }
         }
 

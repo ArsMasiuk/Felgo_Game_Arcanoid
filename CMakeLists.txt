@@ -84,6 +84,8 @@ if(NOT QDOC_EXECUTABLE)
     message(FATAL_ERROR "QDoc not found")
 endif()
 
+file(GLOB_RECURSE DocFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} docs/*)
+
 add_custom_target(docs
     COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/build/docs/html
     COMMAND ${QDOC_EXECUTABLE}
@@ -91,12 +93,5 @@ add_custom_target(docs
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating documentation with QDoc"
 
-    SOURCES
-        docs/index.qdoc
-        docs/part1.qdoc
-        docs/part2.qdoc
-        docs/part3.qdoc
-        docs/part4.qdoc
-        docs/arcanoid.qdocconf
-        docs/style.css
+    SOURCES ${DocFiles}
 )

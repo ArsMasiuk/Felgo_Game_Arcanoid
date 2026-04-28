@@ -1,0 +1,148 @@
+/*!
+    \page part6.html
+    \title Arcanoid Game Tutorial - Part 6: Score Effects
+
+    \tableofcontents
+
+    In this part of the tutorial, we will add floating score popups that appear
+    whenever a brick is hit. The text (e.g. "+5", "+10") will drift downward
+    and fade out, giving the player satisfying visual feedback.
+
+    \section1 Step 1: Create the FloatingScore Component
+
+    Create a new file \c FloatingScore.qml in the \c qml directory. This component
+    is a \c Text element that animates itself downward while fading out, then
+    destroys itself automatically.
+
+    \code
+        import QtQuick 2.0
+
+        Text {
+            id: floatingScore
+
+            property real startX: 0
+            property real startY: 0
+
+            x: startX
+            y: startY
+            color: "yellow"
+            font.pixelSize: 14
+            font.bold: true
+
+            opacity: 1
+
+            ParallelAnimation {
+                id: floatAnimation
+                running: false
+
+                NumberAnimation {
+                    target: floatingScore
+                    property: "y"
+                    to: floatingScore.startY + 40
+                    duration: 600
+                    easing.type: Easing.OutQuad
+                }
+
+                NumberAnimation {
+                    target: floatingScore
+                    property: "opacity"
+                    to: 0
+                    duration: 600
+                    easing.type: Easing.InQuad
+                }
+
+                onStopped: floatingScore.destroy()
+            }
+
+            Component.onCompleted: floatAnimation.start()
+        }
+    \endcode
+
+    How it works:
+    \list
+        \li \c startX and \c startY define where the popup appears (set at creation time).
+        \li A \c ParallelAnimation runs two animations simultaneously:
+            \list
+                \li The text drifts down by 40 pixels over 600ms (\c{Easing.OutQuad} — starts fast, decelerates).
+                \li The text fades from fully opaque to invisible over 600ms (\c{Easing.InQuad} — starts slow, accelerates).
+            \endlist
+        \li When the animation finishes, \c{onStopped} calls \c{destroy()} to remove the object from memory.
+        \li The animation starts automatically via \c{Component.onCompleted}.
+    \endlist
+
+    \section1 Step 2: Add a Spawn Function to Main.qml
+
+    We need a way to dynamically create \c FloatingScore instances at runtime.
+    Add a \c Component and a helper function inside \c gameArea in \c Main.qml:
+
+    \code
+        // Floating score component
+        Component {
+            id: floatingScoreComponent
+            FloatingScore {}
+        }
+
+        function spawnFloatingScore(px, py, points) {
+            if (points <= 0) return
+            var item = floatingScoreComponent.createObject(gameArea, {
+                "text": "+" + points,
+                "startX": px,
+                "startY": py
+            })
+        }
+    \endcode
+
+    How it works:
+    \list
+        \li \c floatingScoreComponent is a \c Component that wraps \c FloatingScore.
+            This lets us create new instances dynamically using \c createObject().
+        \li \c spawnFloatingScore() takes a position (\c px, \c py) and the \c points value.
+        \li If \c points is 0, nothing is spawned (no popup for zero-score hits).
+        \li \c createObject() creates a new \c FloatingScore as a child of \c gameArea,
+            passing the text and position as initial properties.
+    \endlist
+
+    \section1 Step 3: Spawn Score Popups on Brick Hit
+
+    Update the brick collision logic in the \c Timer to spawn a floating score
+    after each hit. Replace the existing brick collision block with:
+
+    \code
+        // Brick collisions
+        for (let i = 0; i < bricks.count; i++) {
+            let item = bricks.itemAt(i)
+            if (item && item.collides(ball.x, ball.y, ball.width, ball.height)) {
+                let points = item.hit()
+                gameArea.score += points
+                gameArea.spawnFloatingScore(
+                    item.x + item.width / 2 - 10,
+                    item.y,
+                    points
+                )
+                ball.ballSpeedY *= -1
+                break
+            }
+        }
+    \endcode
+
+    Key changes:
+    \list
+        \li We store the return value of \c{item.hit()} in a local \c points variable.
+        \li We pass \c points to both the score counter and \c spawnFloatingScore().
+        \li The popup is positioned at the horizontal center of the brick
+            (offset by 10 pixels to roughly center the text).
+    \endlist
+
+    \section1 Step 4: Run the Game
+
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Hit a magenta brick — a yellow "+5" floats down and fades out.
+        \li Hit a steelblue brick — a yellow "+10" floats down as the brick is destroyed.
+        \li Zero-score hits produce no popup.
+    \endlist
+
+    \image arcanoid_p6_scoreeffects.png
+
+*/

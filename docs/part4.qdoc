@@ -2,6 +2,8 @@
     \page part4.html
     \title Arcanoid Game Tutorial - Part 4: Lives
 
+    \l {index.html} {Back to Index}
+
     \tableofcontents
 
     In this part of the tutorial, we will add a lives system to our Arcanoid game.
@@ -245,5 +247,8 @@
             onRestartRequested: gameArea.initGame()
         }
     \endcode
+
+    \l {index.html} {Back to Index}
+
 
 */

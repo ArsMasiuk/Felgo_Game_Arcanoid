@@ -2,6 +2,8 @@
     \page part5.html
     \title Arcanoid Game Tutorial - Part 5: Brick Effects
 
+    \l {index.html} {Back to Index}
+
     \tableofcontents
 
     In this part of the tutorial, we will add visual effects to the bricks.
@@ -203,5 +205,7 @@
         \li Hit a magenta brick — you should see a white flash as it turns steelblue.
         \li Hit a steelblue brick — it should fade out and scale up as it disappears.
     \endlist
+
+    \l {index.html} {Back to Index}
 
 */

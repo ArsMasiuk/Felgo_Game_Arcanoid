@@ -2,6 +2,8 @@
     \page part3.html
     \title Arcanoid Game Tutorial - Part 3: Hit Points
 
+    \l {index.html} {Back to Index}
+
     \tableofcontents
 
     In this part of the tutorial, we will extend our Arcanoid game by adding hit points to the bricks.
@@ -125,5 +127,7 @@
     \endlist
 
     \image arcanoid_p3_hitpoints.png
+
+    \l {index.html} {Back to Index}
 
 */

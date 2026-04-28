@@ -3,8 +3,7 @@
     \title Arcanoid Game Tutorial (Felgo + Qt Quick)
 
     \brief Step-by-step guide to building an Arcanoid game.
-
-    \meta description A complete tutorial explaining how to build a simple Arcanoid-style game using Felgo GameWindow and Qt Quick.
+    \brief A complete tutorial explaining how to build a simple Arcanoid-style game using Felgo GameWindow and Qt Quick.
 
     \section1 Welcome to the Arcanoid tutorial series.
 

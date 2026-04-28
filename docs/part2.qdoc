@@ -2,6 +2,8 @@
     \page part2.html
     \title Arcanoid Game Tutorial - Part 2: Score
 
+    \l {index.html} {Back to Index}
+
     \tableofcontents
 
     In this part of the tutorial, we will extend our Arcanoid game by adding a score counter
@@ -66,5 +68,7 @@
     \endlist
 
     \image arcanoid_p2_score.png
+
+    \l {index.html} {Back to Index}
 
 */

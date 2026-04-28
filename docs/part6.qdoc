@@ -2,6 +2,8 @@
     \page part6.html
     \title Arcanoid Game Tutorial - Part 6: Score Effects
 
+    \l {index.html} {Back to Index}
+
     \tableofcontents
 
     In this part of the tutorial, we will add floating score popups that appear
@@ -144,5 +146,7 @@
     \endlist
 
     \image arcanoid_p6_scoreeffects.png
+
+    \l {index.html} {Back to Index}
 
 */

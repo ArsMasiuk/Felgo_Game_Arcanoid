@@ -1,0 +1,186 @@
+/*!
+    \page part7.html
+    \title Arcanoid Game Tutorial - Part 7: Level Finished
+
+    \tableofcontents
+
+    In this part of the tutorial, we will add a "Level Complete" screen that
+    appears when the player destroys all bricks. The game pauses, shows the
+    final score, and lets the player restart by pressing Space.
+
+    \section1 Step 1: Add Level Finished Property
+
+    Add a \c levelFinished property to \c gameArea, next to the existing
+    \c gameOver property:
+
+    \code
+        property bool gameOver: false
+        property bool levelFinished: false
+    \endcode
+
+    \section1 Step 2: Add a Check Function
+
+    We need a function that checks whether all bricks have been destroyed.
+    Add the following inside \c gameArea:
+
+    \code
+        function checkLevelFinished() {
+            for (let i = 0; i < bricks.count; i++) {
+                let item = bricks.itemAt(i)
+                if (item && !item.destroyed)
+                    return false
+            }
+            return true
+        }
+    \endcode
+
+    The function iterates over every brick. If any brick is not destroyed,
+    it returns \c false. If the loop completes, all bricks are gone and it
+    returns \c true.
+
+    \section1 Step 3: Update initGame
+
+    Add \c{levelFinished = false} to the \c initGame() function so the state
+    resets properly on restart:
+
+    \code
+        function initGame() {
+            score = 0
+            lives = 5
+            gameOver = false
+            levelFinished = false
+            ...
+        }
+    \endcode
+
+    \section1 Step 4: Stop the Timer
+
+    The game loop should stop when the level is finished. Update the Timer's
+    \c running property:
+
+    \code
+        running: !gameArea.gameOver && !gameArea.levelFinished
+    \endcode
+
+    \section1 Step 5: Detect Level Completion
+
+    After a brick is destroyed in the collision logic, check if all bricks
+    are gone. Add the following after the \c{ball.ballSpeedY *= -1} line
+    inside the brick collision block:
+
+    \code
+        // Check if all bricks destroyed
+        if (gameArea.checkLevelFinished()) {
+            gameArea.levelFinished = true
+            ball.ballStuck = true
+        }
+    \endcode
+
+    When all bricks are destroyed:
+    \list
+        \li \c levelFinished is set to \c true, which stops the Timer.
+        \li The ball is stuck to the paddle so it stops moving.
+    \endlist
+
+    \section1 Step 6: Create the LevelFinishedScreen Component
+
+    Create a new file \c LevelFinishedScreen.qml in the \c qml directory.
+    It follows the same pattern as \c GameOverScreen but with a victory message:
+
+    \code
+        import QtQuick 2.0
+
+        Rectangle {
+            id: levelFinishedScreen
+
+            anchors.fill: parent
+            color: "#CC000000"
+            visible: false
+
+            property int score: 0
+
+            signal restartRequested()
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 10
+
+                Text {
+                    text: "LEVEL COMPLETE!"
+                    color: "lime"
+                    font.pixelSize: 32
+                    font.bold: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: "Score: " + levelFinishedScreen.score
+                    color: "white"
+                    font.pixelSize: 18
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: "Press Space to play again"
+                    color: "white"
+                    font.pixelSize: 14
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+        }
+    \endcode
+
+    Key differences from \c GameOverScreen:
+    \list
+        \li Title says "LEVEL COMPLETE!" in lime green instead of "GAME OVER" in red.
+        \li Prompt says "Press Space to play again".
+    \endlist
+
+    \section1 Step 7: Add the Screen to Main.qml
+
+    Add the \c LevelFinishedScreen inside the \c Scene, next to the
+    \c GameOverScreen:
+
+    \code
+        LevelFinishedScreen {
+            id: levelFinishedScreen
+            score: gameArea.score
+            visible: gameArea.levelFinished
+
+            onRestartRequested: gameArea.initGame()
+        }
+    \endcode
+
+    \section1 Step 8: Update Key Handling
+
+    Update the Space key handler to also restart from the level finished
+    state:
+
+    \code
+        if (event.key === Qt.Key_Space) {
+            if (gameArea.gameOver || gameArea.levelFinished) {
+                gameArea.initGame()
+                event.accepted = true
+            } else if (ball.ballStuck) {
+                ball.ballStuck = false
+                event.accepted = true
+            }
+        }
+    \endcode
+
+    Now pressing Space restarts the game from both the Game Over and
+    Level Complete screens.
+
+    \section1 Step 9: Run the Game
+
+    \list 1
+        \li Build and run the project.
+        \li Press \b{Space} to launch the ball.
+        \li Destroy all bricks.
+        \li The "LEVEL COMPLETE!" screen appears with your final score.
+        \li Press \b{Space} to restart.
+    \endlist
+
+    \image arcanoid_p7_levelfinished.png
+
+*/

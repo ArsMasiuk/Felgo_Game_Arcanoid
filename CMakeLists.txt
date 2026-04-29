@@ -30,7 +30,7 @@ set(FELGO_PLUGINS
 file(GLOB_RECURSE QmlFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} qml/*.qml qml/*.js)
 
 # Find all non-QML/JS files in the qml and assets folder to add as resources:
-file(GLOB_RECURSE AssetsFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} assets/* qml/*)
+file(GLOB_RECURSE AssetsFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} assets/* qml/* assets/sounds/*)
 list(REMOVE_ITEM AssetsFiles ${QmlFiles})
 
 qt_add_executable(Arcanoid

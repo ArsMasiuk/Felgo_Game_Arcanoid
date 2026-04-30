@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part1.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 1: Basic Game | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#prerequisites">Prerequisites</a></li>
+<li class="level1"><a href="#step-1-create-the-game-window">Step 1: Create the Game Window</a></li>
+<li class="level1"><a href="#step-2-add-a-scene">Step 2: Add a Scene</a></li>
+<li class="level1"><a href="#step-3-set-up-the-game-area">Step 3: Set Up the Game Area</a></li>
+<li class="level1"><a href="#step-4-create-the-paddle">Step 4: Create the Paddle</a></li>
+<li class="level1"><a href="#step-5-create-the-ball">Step 5: Create the Ball</a></li>
+<li class="level1"><a href="#step-6-build-the-brick-grid">Step 6: Build the Brick Grid</a></li>
+<li class="level1"><a href="#step-7-handle-keyboard-input">Step 7: Handle Keyboard Input</a></li>
+<li class="level1"><a href="#step-8-implement-the-game-loop">Step 8: Implement the Game Loop</a></li>
+<li class="level2"><a href="#paddle-movement">Paddle Movement</a></li>
+<li class="level2"><a href="#ball-movement-stuck-mode">Ball Movement (Stuck Mode)</a></li>
+<li class="level2"><a href="#ball-movement-free-mode">Ball Movement (Free Mode)</a></li>
+<li class="level1"><a href="#step-9-add-collision-detection">Step 9: Add Collision Detection</a></li>
+<li class="level2"><a href="#ball-vs-walls">Ball vs. Walls</a></li>
+<li class="level2"><a href="#ball-vs-paddle">Ball vs. Paddle</a></li>
+<li class="level2"><a href="#ball-vs-bottom-edge">Ball vs. Bottom Edge</a></li>
+<li class="level2"><a href="#ball-vs-bricks">Ball vs. Bricks</a></li>
+<li class="level1"><a href="#step-10-run-the-game">Step 10: Run the Game</a></li>
+<li class="level1"><a href="#next-steps">Next Steps</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 1: Basic Game</h1>
+<!-- $$$part1.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this tutorial, we will build the core gameplay of an Arcanoid-style game. We will create a paddle, a bouncing ball, and a grid of bricks to break. The game will be fully playable, and you can extend it with additional features in Part 2.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before starting, make sure you have:</p>
+<ul>
+<li><a href="https://felgo.com/download">Felgo SDK</a> installed (includes Qt 6.8+)</li>
+<li>Basic familiarity with QML syntax</li>
+<li>A text editor or IDE such as Qt Creator or Visual Studio</li>
+</ul>
+<h2 id="step-1-create-the-game-window">Step 1: Create the Game Window</h2>
+<p>Every Felgo game starts with a <code translate="no">GameWindow</code>. This is the top-level element that manages the application window and scaling.</p>
+<pre class="cpp" translate="no">import Felgo <span class="number">4.0</span>
+import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+GameWindow {
+    id: gameWindow
+    activeScene: scene
+    screenWidth: <span class="number">960</span>
+    screenHeight: <span class="number">640</span>
+}</pre>
+<ul>
+<li><code translate="no">screenWidth</code> and <code translate="no">screenHeight</code> set the actual window size in pixels.</li>
+<li><code translate="no">activeScene</code> tells Felgo which Scene to display.</li>
+</ul>
+<h2 id="step-2-add-a-scene">Step 2: Add a Scene</h2>
+<p>Inside the <code translate="no">GameWindow</code>, add a <code translate="no">Scene</code>. The scene defines a <i>logical size</i> that auto-scales to fit the window.</p>
+<pre class="cpp" translate="no">Scene {
+    id: scene
+    width: <span class="number">480</span>
+    height: <span class="number">320</span>
+
+    focus: <span class="keyword">true</span>
+    Component<span class="operator">.</span>onCompleted: forceActiveFocus()
+}</pre>
+<ul>
+<li>The logical size is 480×320. Felgo scales this to the actual window size.</li>
+<li><code translate="no">focus: true</code> and <code translate="no">forceActiveFocus()</code> are <b>required</b> to receive keyboard input.</li>
+</ul>
+<h2 id="step-3-set-up-the-game-area">Step 3: Set Up the Game Area</h2>
+<p>Add a black <code translate="no">Rectangle</code> that fills the scene. This acts as the game area and holds the score.</p>
+<pre class="cpp" translate="no">Rectangle {
+    id: gameArea
+    anchors<span class="operator">.</span>fill: parent
+    color: <span class="string">&quot;black&quot;</span>
+
+    property <span class="type">int</span> score: <span class="number">0</span>
+}</pre>
+<div class="table"><table class="generic">
+ <thead><tr class="qt-style"><th >Property</th><th >Purpose</th></tr></thead>
+<tr valign="top" class="odd"><td ><code translate="no">score</code></td><td >Tracks the player's current score</td></tr>
+</table></div>
+<h2 id="step-4-create-the-paddle">Step 4: Create the Paddle</h2>
+<p>The paddle is a simple white rounded rectangle near the bottom of the screen.</p>
+<pre class="cpp" translate="no">Rectangle {
+    id: paddle
+    width: <span class="number">100</span>
+    height: <span class="number">15</span>
+    color: <span class="string">&quot;white&quot;</span>
+    radius: <span class="number">5</span>
+    y: parent<span class="operator">.</span>height <span class="operator">-</span> <span class="number">30</span>
+    x: parent<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> width <span class="operator">/</span> <span class="number">2</span>
+}</pre>
+<p>The paddle starts centered horizontally. It will be moved by keyboard input (handled in Step 7).</p>
+<p>To make the paddle movable, lets extend <code translate="no">paddle</code> by adding the following properties to it:</p>
+<pre class="cpp" translate="no">Rectangle {
+    id: paddle
+    <span class="operator">.</span><span class="operator">.</span><span class="operator">.</span>
+
+    property real paddleSpeed: <span class="number">6</span>
+    property <span class="type">bool</span> leftPressed: <span class="keyword">false</span>
+    property <span class="type">bool</span> rightPressed: <span class="keyword">false</span>
+}</pre>
+<div class="table"><table class="generic">
+ <thead><tr class="qt-style"><th >Property</th><th >Purpose</th></tr></thead>
+<tr valign="top" class="odd"><td ><code translate="no">leftPressed</code></td><td >Left button has been pressed -&gt; paddle moves to the left</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">rightPressed</code></td><td >Right button has been pressed -&gt; paddle moves to the right</td></tr>
+<tr valign="top" class="odd"><td ><code translate="no">paddleSpeed</code></td><td >How many pixels the paddle moves per frame</td></tr>
+</table></div>
+<h2 id="step-5-create-the-ball">Step 5: Create the Ball</h2>
+<p>The ball is a small red circle.</p>
+<pre class="cpp" translate="no">Rectangle {
+    id: ball
+    width: <span class="number">12</span>
+    height: <span class="number">12</span>
+    radius: <span class="number">6</span>
+    color: <span class="string">&quot;red&quot;</span>
+    x: parent<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span>
+    y: parent<span class="operator">.</span>height <span class="operator">/</span> <span class="number">2</span>
+}</pre>
+<div class="admonition note">
+<p><b>Note: </b>In QML, you create a circle by setting <code translate="no">radius</code> to half of <code translate="no">width</code> and <code translate="no">height</code>.</p>
+</div>
+<p>Lets add some basic properties to the <code translate="no">ball</code> as well:</p>
+<pre class="cpp" translate="no">Rectangle {
+    id: ball
+
+    <span class="operator">.</span><span class="operator">.</span><span class="operator">.</span>
+    property real ballSpeedX: <span class="number">3</span>
+    property real ballSpeedY: <span class="number">3</span>
+    property <span class="type">bool</span> ballStuck: <span class="keyword">true</span>
+}</pre>
+<div class="table"><table class="generic">
+ <thead><tr class="qt-style"><th >Property</th><th >Purpose</th></tr></thead>
+<tr valign="top" class="odd"><td ><code translate="no">ballSpeedX</code>, <code translate="no">ballSpeedY</code></td><td >Ball velocity in pixels per frame</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">ballStuck</code></td><td >When <code translate="no">true</code>, the ball stays attached to the paddle</td></tr>
+</table></div>
+<h2 id="step-6-build-the-brick-grid">Step 6: Build the Brick Grid</h2>
+<p>Use a <code translate="no">Repeater</code> to generate a grid of bricks. The brick layout properties are defined on the Repeater itself, and each brick calculates its own column and row from its <code translate="no">index</code>.</p>
+<pre class="cpp" translate="no">Repeater {
+    id: bricks
+    model: bricks<span class="operator">.</span>cols <span class="operator">*</span> bricks<span class="operator">.</span>rows
+
+    property <span class="type">int</span> cols: <span class="number">10</span>
+    property <span class="type">int</span> rows: <span class="number">3</span>
+    property real brickSpacing: <span class="number">4</span>
+    property real brickWidth: (gameArea<span class="operator">.</span>width <span class="operator">-</span> (cols <span class="operator">+</span> <span class="number">1</span>) <span class="operator">*</span> brickSpacing) <span class="operator">/</span> cols
+    property real brickHeight: <span class="number">20</span>
+
+    Rectangle {
+        width: bricks<span class="operator">.</span>brickWidth
+        height: bricks<span class="operator">.</span>brickHeight
+        color: <span class="string">&quot;steelblue&quot;</span>
+        border<span class="operator">.</span>color: <span class="string">&quot;white&quot;</span>
+
+        property <span class="type">int</span> col: index <span class="operator">%</span> bricks<span class="operator">.</span>cols
+        property <span class="type">int</span> row: Math<span class="operator">.</span>floor(index <span class="operator">/</span> bricks<span class="operator">.</span>cols)
+
+        x: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> col <span class="operator">*</span> (bricks<span class="operator">.</span>brickWidth <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing)
+        y: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> row <span class="operator">*</span> (bricks<span class="operator">.</span>brickHeight <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing)
+
+        property <span class="type">bool</span> destroyed: <span class="keyword">false</span>
+        visible: <span class="operator">!</span>destroyed
+    }
+}</pre>
+<p>How the grid works:</p>
+<ul>
+<li>The layout properties (<code translate="no">cols</code>, <code translate="no">rows</code>, <code translate="no">brickSpacing</code>, <code translate="no">brickWidth</code>, <code translate="no">brickHeight</code>) live on the <code translate="no">bricks</code> Repeater.</li>
+<li>The <code translate="no">model</code> produces <code translate="no">cols × rows</code> items (10 × 3 = 30 bricks).</li>
+<li>Each brick computes its <code translate="no">col</code> and <code translate="no">row</code> from the flat <code translate="no">index</code>.</li>
+<li>The <code translate="no">x</code> and <code translate="no">y</code> positions include spacing between bricks.</li>
+<li><code translate="no">brickWidth</code> is calculated from <code translate="no">gameArea.width</code> to fill the available space evenly.</li>
+<li>When <code translate="no">destroyed</code> is set to <code translate="no">true</code>, the brick becomes invisible.</li>
+</ul>
+<h2 id="step-7-handle-keyboard-input">Step 7: Handle Keyboard Input</h2>
+<p>Add key handlers to the <code translate="no">Scene</code> to control the paddle and launch the ball.</p>
+<pre class="cpp" translate="no">Keys<span class="operator">.</span>onPressed: function(event) {
+    <span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Left)
+        paddle<span class="operator">.</span>leftPressed <span class="operator">=</span> <span class="keyword">true</span>
+
+    <span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Right)
+        paddle<span class="operator">.</span>rightPressed <span class="operator">=</span> <span class="keyword">true</span>
+
+    <span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Space <span class="operator">&amp;</span><span class="operator">&amp;</span> ball<span class="operator">.</span>ballStuck) {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">false</span>
+        event<span class="operator">.</span>accepted <span class="operator">=</span> <span class="keyword">true</span>
+    }
+}
+
+Keys<span class="operator">.</span>onReleased: function(event) {
+    <span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Left)
+        paddle<span class="operator">.</span>leftPressed <span class="operator">=</span> <span class="keyword">false</span>
+
+    <span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Right)
+        paddle<span class="operator">.</span>rightPressed <span class="operator">=</span> <span class="keyword">false</span>
+}</pre>
+<ul>
+<li><b>Left/Right arrows</b> set boolean flags that the game loop reads each frame.</li>
+<li><b>Space</b> launches the ball by setting <code translate="no">ballStuck</code> to <code translate="no">false</code>.</li>
+</ul>
+<h2 id="step-8-implement-the-game-loop">Step 8: Implement the Game Loop</h2>
+<p>The game loop is a <code translate="no">Timer</code> that fires every 16 ms (~60 FPS). It handles all movement and collision logic.</p>
+<h3 id="paddle-movement">Paddle Movement</h3>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (paddle<span class="operator">.</span>leftPressed)
+    paddle<span class="operator">.</span>x <span class="operator">-</span><span class="operator">=</span> paddle<span class="operator">.</span>paddleSpeed
+
+<span class="keyword">if</span> (paddle<span class="operator">.</span>rightPressed)
+    paddle<span class="operator">.</span>x <span class="operator">+</span><span class="operator">=</span> paddle<span class="operator">.</span>paddleSpeed
+
+<span class="comment">// Clamp inside screen</span>
+<span class="keyword">if</span> (paddle<span class="operator">.</span>x <span class="operator">&lt;</span> <span class="number">0</span>)
+    paddle<span class="operator">.</span>x <span class="operator">=</span> <span class="number">0</span>
+
+<span class="keyword">if</span> (paddle<span class="operator">.</span>x <span class="operator">+</span> paddle<span class="operator">.</span>width <span class="operator">&gt;</span> gameArea<span class="operator">.</span>width)
+    paddle<span class="operator">.</span>x <span class="operator">=</span> gameArea<span class="operator">.</span>width <span class="operator">-</span> paddle<span class="operator">.</span>width</pre>
+<p>The paddle moves based on the key flags and is clamped so it cannot leave the screen.</p>
+<h3 id="ball-movement-stuck-mode">Ball Movement (Stuck Mode)</h3>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>ballStuck) {
+    ball<span class="operator">.</span>x <span class="operator">=</span> paddle<span class="operator">.</span>x <span class="operator">+</span> paddle<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> ball<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span>
+    ball<span class="operator">.</span>y <span class="operator">=</span> paddle<span class="operator">.</span>y <span class="operator">-</span> ball<span class="operator">.</span>height <span class="operator">-</span> <span class="number">2</span>
+    <span class="keyword">return</span>
+}</pre>
+<p>While stuck, the ball sits centered on top of the paddle. Pressing Space releases it.</p>
+<h3 id="ball-movement-free-mode">Ball Movement (Free Mode)</h3>
+<pre class="cpp" translate="no">ball<span class="operator">.</span>x <span class="operator">+</span><span class="operator">=</span> ball<span class="operator">.</span>ballSpeedX
+ball<span class="operator">.</span>y <span class="operator">+</span><span class="operator">=</span> ball<span class="operator">.</span>ballSpeedY</pre>
+<p>Each frame, the ball moves by its speed values in both axes.</p>
+<h2 id="step-9-add-collision-detection">Step 9: Add Collision Detection</h2>
+<h3 id="ball-vs-walls">Ball vs. Walls</h3>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>x <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">|</span><span class="operator">|</span> ball<span class="operator">.</span>x <span class="operator">+</span> ball<span class="operator">.</span>width <span class="operator">&gt;</span><span class="operator">=</span> gameArea<span class="operator">.</span>width)
+    ball<span class="operator">.</span>ballSpeedX <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+
+<span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) {
+    ball<span class="operator">.</span>y <span class="operator">=</span> <span class="number">1</span>
+    ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+}</pre>
+<p>The ball bounces off the left, right, and top walls by reversing the appropriate speed component.</p>
+<h3 id="ball-vs-paddle">Ball vs. Paddle</h3>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">+</span> ball<span class="operator">.</span>height <span class="operator">&gt;</span><span class="operator">=</span> paddle<span class="operator">.</span>y <span class="operator">&amp;</span><span class="operator">&amp;</span>
+    ball<span class="operator">.</span>x <span class="operator">+</span> ball<span class="operator">.</span>width <span class="operator">&gt;</span><span class="operator">=</span> paddle<span class="operator">.</span>x <span class="operator">&amp;</span><span class="operator">&amp;</span>
+    ball<span class="operator">.</span>x <span class="operator">&lt;</span><span class="operator">=</span> paddle<span class="operator">.</span>x <span class="operator">+</span> paddle<span class="operator">.</span>width) {
+    ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+}</pre>
+<p>This is a simple AABB (axis-aligned bounding box) collision check. When the ball overlaps the paddle, its vertical direction is reversed.</p>
+<h3 id="ball-vs-bottom-edge">Ball vs. Bottom Edge</h3>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&gt;</span> gameArea<span class="operator">.</span>height) {
+    ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+}</pre>
+<p>If the ball falls below the screen, it reattaches to the paddle (like losing a life).</p>
+<h3 id="ball-vs-bricks">Ball vs. Bricks</h3>
+<pre class="cpp" translate="no"><span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> gameArea<span class="operator">.</span>children<span class="operator">.</span>length; i<span class="operator">+</span><span class="operator">+</span>) {
+    let item <span class="operator">=</span> gameArea<span class="operator">.</span>children<span class="operator">[</span>i<span class="operator">]</span>
+    <span class="keyword">if</span> (item<span class="operator">.</span>destroyed <span class="operator">!</span><span class="operator">=</span><span class="operator">=</span> undefined <span class="operator">&amp;</span><span class="operator">&amp;</span> <span class="operator">!</span>item<span class="operator">.</span>destroyed) {
+        <span class="keyword">if</span> (ball<span class="operator">.</span>x <span class="operator">&lt;</span> item<span class="operator">.</span>x <span class="operator">+</span> item<span class="operator">.</span>width <span class="operator">&amp;</span><span class="operator">&amp;</span>
+            ball<span class="operator">.</span>x <span class="operator">+</span> ball<span class="operator">.</span>width <span class="operator">&gt;</span> item<span class="operator">.</span>x <span class="operator">&amp;</span><span class="operator">&amp;</span>
+            ball<span class="operator">.</span>y <span class="operator">&lt;</span> item<span class="operator">.</span>y <span class="operator">+</span> item<span class="operator">.</span>height <span class="operator">&amp;</span><span class="operator">&amp;</span>
+            ball<span class="operator">.</span>y <span class="operator">+</span> ball<span class="operator">.</span>height <span class="operator">&gt;</span> item<span class="operator">.</span>y) {
+
+            item<span class="operator">.</span>destroyed <span class="operator">=</span> <span class="keyword">true</span>
+            ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+            <span class="keyword">break</span>
+        }
+    }
+}</pre>
+<p>The loop iterates over all children of <code translate="no">gameArea</code>. It identifies bricks by checking for the <code translate="no">destroyed</code> property. On collision:</p>
+<ol class="1" type="1"><li>The brick is marked as <code translate="no">destroyed</code> (becomes invisible).</li>
+<li>The ball's vertical speed is reversed.</li>
+<li>The loop breaks so only one brick is destroyed per frame.</li>
+</ol>
+<h2 id="step-10-run-the-game">Step 10: Run the Game</h2>
+<ol class="1" type="1"><li>Build and run the project.</li>
+<li>Press <b>Space</b> to launch the ball.</li>
+<li>Use <b>Left</b> and <b>Right</b> arrow keys to move the paddle.</li>
+<li>Destroy all bricks to win!</li>
+</ol>
+<p class="centerAlign"><img src="images/arcanoid.png" alt="" /></p><h2 id="next-steps">Next Steps</h2>
+<p>Here are some ideas to extend the game:</p>
+<ul>
+<li>Add a <b>score counter</b> using the existing <code translate="no">gameArea.score</code> property and a <code translate="no">Text</code> element.</li>
+<li>Add <b>lives</b> &mdash; track how many times the ball falls and show a game-over screen.</li>
+<li>Add <b>colored brick rows</b> with different point values.</li>
+<li>Implement <b>angle-based bouncing</b> &mdash; change <code translate="no">ballSpeedX</code> based on where the ball hits the paddle.</li>
+<li>Add <b>sound effects</b> using the Felgo <code translate="no">GameSoundEffect</code> type.</li>
+<li>Add a <b>win condition</b> that detects when all bricks are destroyed.</li>
+</ul>
+<p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part1.html -->
+</body>
+</html>

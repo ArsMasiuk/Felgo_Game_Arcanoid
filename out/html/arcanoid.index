@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE QDOCINDEX>
+<INDEX url="" title="Arcanoid Game Tutorial" version="" project="Arcanoid">
+    <namespace name="" status="active" access="public" module="arcanoid">
+        <page name="index.html" href="index.html" status="active" location="index.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/index.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial (Felgo + Qt Quick)" fulltitle="Arcanoid Game Tutorial (Felgo + Qt Quick)" subtitle="" brief="Step-by-step guide to building an Arcanoid game">
+            <contents name="welcome-to-the-arcanoid-tutorial-series" title="Welcome to the Arcanoid tutorial series." level="1"/>
+            <contents name="tutorials" title="Tutorials" level="2"/>
+        </page>
+        <page name="part1.html" href="part1.html" status="active" location="part1.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part1.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 1: Basic Game" fulltitle="Arcanoid Game Tutorial - Part 1: Basic Game" subtitle="">
+            <contents name="prerequisites" title="Prerequisites" level="1"/>
+            <contents name="step-1-create-the-game-window" title="Step 1: Create the Game Window" level="1"/>
+            <contents name="step-2-add-a-scene" title="Step 2: Add a Scene" level="1"/>
+            <contents name="step-3-set-up-the-game-area" title="Step 3: Set Up the Game Area" level="1"/>
+            <contents name="step-4-create-the-paddle" title="Step 4: Create the Paddle" level="1"/>
+            <contents name="step-5-create-the-ball" title="Step 5: Create the Ball" level="1"/>
+            <contents name="step-6-build-the-brick-grid" title="Step 6: Build the Brick Grid" level="1"/>
+            <contents name="step-7-handle-keyboard-input" title="Step 7: Handle Keyboard Input" level="1"/>
+            <contents name="step-8-implement-the-game-loop" title="Step 8: Implement the Game Loop" level="1"/>
+            <contents name="paddle-movement" title="Paddle Movement" level="2"/>
+            <contents name="ball-movement-stuck-mode" title="Ball Movement (Stuck Mode)" level="2"/>
+            <contents name="ball-movement-free-mode" title="Ball Movement (Free Mode)" level="2"/>
+            <contents name="step-9-add-collision-detection" title="Step 9: Add Collision Detection" level="1"/>
+            <contents name="ball-vs-walls" title="Ball vs. Walls" level="2"/>
+            <contents name="ball-vs-paddle" title="Ball vs. Paddle" level="2"/>
+            <contents name="ball-vs-bottom-edge" title="Ball vs. Bottom Edge" level="2"/>
+            <contents name="ball-vs-bricks" title="Ball vs. Bricks" level="2"/>
+            <contents name="step-10-run-the-game" title="Step 10: Run the Game" level="1"/>
+            <contents name="next-steps" title="Next Steps" level="1"/>
+        </page>
+        <page name="part2.html" href="part2.html" status="active" location="part2.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part2.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 2: Score" fulltitle="Arcanoid Game Tutorial - Part 2: Score" subtitle="">
+            <contents name="step-1-adding-score-counter" title="Step 1: Adding Score Counter" level="1"/>
+            <contents name="step-2-adding-score-display" title="Step 2: Adding Score Display" level="1"/>
+            <contents name="step-3-incrementing-score-on-brick-destruction" title="Step 3: Incrementing Score on Brick Destruction" level="1"/>
+            <contents name="step-4-run-the-game" title="Step 4: Run the Game" level="1"/>
+        </page>
+        <page name="part3.html" href="part3.html" status="active" location="part3.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part3.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 3: Hit Points" fulltitle="Arcanoid Game Tutorial - Part 3: Hit Points" subtitle="">
+            <contents name="step-1-extracting-brick-logic-to-separate-file" title="Step 1: Extracting Brick Logic to Separate File." level="1"/>
+            <contents name="step-2-updating-main-qml" title="Step 2: Updating Main.qml" level="1"/>
+            <contents name="step-3-updating-collision-logic" title="Step 3: Updating Collision Logic" level="1"/>
+            <contents name="step-4-run-the-game" title="Step 4: Run the Game" level="1"/>
+        </page>
+        <page name="part4.html" href="part4.html" status="active" location="part4.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part4.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 4: Lives" fulltitle="Arcanoid Game Tutorial - Part 4: Lives" subtitle="">
+            <contents name="step-1-adding-lives-property" title="Step 1: Adding Lives Property" level="1"/>
+            <contents name="step-2-adding-lives-display" title="Step 2: Adding Lives Display" level="1"/>
+            <contents name="step-3-losing-a-life" title="Step 3: Losing a Life" level="1"/>
+            <contents name="step-4-run-the-game" title="Step 4: Run the Game" level="1"/>
+            <contents name="step-5-add-game-over-screen" title="Step 5: Add Game Over Screen" level="1"/>
+            <contents name="step-6-add-game-over-logic" title="Step 6: Add Game Over Logic" level="1"/>
+            <contents name="step-6-run-the-game" title="Step 6: Run the Game" level="1"/>
+            <contents name="step-7-refactor-game-state-initialization" title="Step 7: Refactor Game State Initialization" level="1"/>
+        </page>
+        <page name="part5.html" href="part5.html" status="active" location="part5.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part5.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 5: Brick Effects" fulltitle="Arcanoid Game Tutorial - Part 5: Brick Effects" subtitle="">
+            <contents name="step-1-destroy-animation" title="Step 1: Destroy Animation" level="1"/>
+            <contents name="step-2-hit-flash-effect" title="Step 2: Hit Flash Effect" level="1"/>
+            <contents name="step-3-triggering-the-flash" title="Step 3: Triggering the Flash" level="1"/>
+            <contents name="step-4-complete-brick-qml" title="Step 4: Complete Brick.qml" level="1"/>
+            <contents name="step-5-run-the-game" title="Step 5: Run the Game" level="1"/>
+        </page>
+        <page name="part6.html" href="part6.html" status="active" location="part6.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part6.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 6: Score Effects" fulltitle="Arcanoid Game Tutorial - Part 6: Score Effects" subtitle="">
+            <contents name="step-1-create-the-floatingscore-component" title="Step 1: Create the FloatingScore Component" level="1"/>
+            <contents name="step-2-add-a-spawn-function-to-main-qml" title="Step 2: Add a Spawn Function to Main.qml" level="1"/>
+            <contents name="step-3-spawn-score-popups-on-brick-hit" title="Step 3: Spawn Score Popups on Brick Hit" level="1"/>
+            <contents name="step-4-run-the-game" title="Step 4: Run the Game" level="1"/>
+        </page>
+        <page name="part7.html" href="part7.html" status="active" location="part7.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part7.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 7: Level Finished" fulltitle="Arcanoid Game Tutorial - Part 7: Level Finished" subtitle="">
+            <contents name="step-1-add-level-finished-property" title="Step 1: Add Level Finished Property" level="1"/>
+            <contents name="step-2-add-a-check-function" title="Step 2: Add a Check Function" level="1"/>
+            <contents name="step-3-update-initgame" title="Step 3: Update initGame" level="1"/>
+            <contents name="step-4-stop-the-timer" title="Step 4: Stop the Timer" level="1"/>
+            <contents name="step-5-detect-level-completion" title="Step 5: Detect Level Completion" level="1"/>
+            <contents name="step-6-create-the-levelfinishedscreen-component" title="Step 6: Create the LevelFinishedScreen Component" level="1"/>
+            <contents name="step-7-add-the-screen-to-main-qml" title="Step 7: Add the Screen to Main.qml" level="1"/>
+            <contents name="step-8-update-key-handling" title="Step 8: Update Key Handling" level="1"/>
+            <contents name="step-9-run-the-game" title="Step 9: Run the Game" level="1"/>
+        </page>
+        <page name="part8.html" href="part8.html" status="active" location="part8.qdoc" filepath="C:/BAS/Source/Repos/Arcanoid/docs/part8.qdoc" lineno="1" documented="true" subtype="page" title="Arcanoid Game Tutorial - Part 8: Sound Effects" fulltitle="Arcanoid Game Tutorial - Part 8: Sound Effects" subtitle="">
+            <contents name="step-1-prepare-sound-assets" title="Step 1: Prepare Sound Assets" level="1"/>
+            <contents name="step-2-create-soundeffects-qml" title="Step 2: Create SoundEffects.qml" level="1"/>
+            <contents name="step-3-add-soundeffects-to-main-qml" title="Step 3: Add SoundEffects to Main.qml" level="1"/>
+            <contents name="step-4-trigger-sounds-on-wall-bounce" title="Step 4: Trigger Sounds on Wall Bounce" level="1"/>
+            <contents name="step-5-trigger-sound-on-paddle-hit" title="Step 5: Trigger Sound on Paddle Hit" level="1"/>
+            <contents name="step-6-trigger-sounds-on-brick-collision" title="Step 6: Trigger Sounds on Brick Collision" level="1"/>
+            <contents name="step-7-trigger-sounds-on-life-loss-and-game-over" title="Step 7: Trigger Sounds on Life Loss and Game Over" level="1"/>
+            <contents name="step-8-trigger-sound-on-ball-launch" title="Step 8: Trigger Sound on Ball Launch" level="1"/>
+            <contents name="step-9-deploy-sound-assets" title="Step 9: Deploy Sound Assets" level="1"/>
+            <contents name="summary" title="Summary" level="1"/>
+        </page>
+    </namespace>
+</INDEX>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part3.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 3: Hit Points | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-extracting-brick-logic-to-separate-file">Step 1: Extracting Brick Logic to Separate File.</a></li>
+<li class="level1"><a href="#step-2-updating-main-qml">Step 2: Updating Main.qml</a></li>
+<li class="level1"><a href="#step-3-updating-collision-logic">Step 3: Updating Collision Logic</a></li>
+<li class="level1"><a href="#step-4-run-the-game">Step 4: Run the Game</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 3: Hit Points</h1>
+<!-- $$$part3.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will extend our Arcanoid game by adding hit points to the bricks. Every hit will decrease hit point value of the brick. The brick is destroyed when its hit counter drops to 0.</p>
+<h2 id="step-1-extracting-brick-logic-to-separate-file">Step 1: Extracting Brick Logic to Separate File.</h2>
+<p>Create a new Brick.qml file and put it next to Main.qml first:</p>
+<pre class="cpp" translate="no">import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+Rectangle {
+    id: brick
+
+    border<span class="operator">.</span>color: <span class="string">&quot;white&quot;</span>
+
+    property <span class="type">int</span> hitPoints: <span class="number">1</span>
+    property <span class="type">bool</span> destroyed: <span class="keyword">false</span>
+
+    color: hitPoints <span class="operator">&gt;</span><span class="operator">=</span> <span class="number">2</span> <span class="operator">?</span> <span class="string">&quot;magenta&quot;</span> : <span class="string">&quot;steelblue&quot;</span>
+    visible: <span class="operator">!</span>destroyed
+
+    function hit() {
+        hitPoints <span class="operator">-</span><span class="operator">=</span> <span class="number">1</span>
+
+        <span class="keyword">if</span> (hitPoints <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) {
+            destroyed <span class="operator">=</span> <span class="keyword">true</span>
+            <span class="keyword">return</span> <span class="number">10</span>
+        }
+
+        <span class="keyword">if</span> (hitPoints <span class="operator">&gt;</span><span class="operator">=</span> <span class="number">1</span>)
+            <span class="keyword">return</span> <span class="number">5</span>
+
+        <span class="keyword">return</span> <span class="number">0</span>
+    }
+}</pre>
+<p>Here we have defined a <code translate="no">hitPoints</code> variable which determines how many hits the brick can take before it gets destroyed.</p>
+<p>We have also added a <code translate="no">hit()</code> function which will decrease the hit points and return the score value for the hit (10 points if the brick was destroyed, 5 if there are still hitPoints left, and 0 otherwise).</p>
+<p>Additionally, we set the color of the brick to magenta if it has 2 or more hit points, and change it to steelblue otherwise.</p>
+<h2 id="step-2-updating-main-qml">Step 2: Updating Main.qml</h2>
+<p>Update the Repeater in Main.qml to use the new Brick component so that the 1st row of bricks has 2 hit points and the rest have 1 hit point:</p>
+<pre class="cpp" translate="no"><span class="comment">// Bricks</span>
+Repeater {
+    id: bricks
+    model: bricks<span class="operator">.</span>cols <span class="operator">*</span> bricks<span class="operator">.</span>rows
+
+    property <span class="type">int</span> cols: <span class="number">10</span>
+    property <span class="type">int</span> rows: <span class="number">3</span>
+    property real brickSpacing: <span class="number">4</span>
+    property real brickWidth: (gameArea<span class="operator">.</span>width <span class="operator">-</span> (cols <span class="operator">+</span> <span class="number">1</span>) <span class="operator">*</span> brickSpacing) <span class="operator">/</span> cols
+    property real brickHeight: <span class="number">20</span>
+
+    Brick {
+        width: bricks<span class="operator">.</span>brickWidth
+        height: bricks<span class="operator">.</span>brickHeight
+
+        property <span class="type">int</span> col: index <span class="operator">%</span> bricks<span class="operator">.</span>cols
+        property <span class="type">int</span> row: Math<span class="operator">.</span>floor(index <span class="operator">/</span> bricks<span class="operator">.</span>cols)
+
+        hitPoints: row <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">?</span> <span class="number">2</span> : <span class="number">1</span>
+
+        x: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> col <span class="operator">*</span> (bricks<span class="operator">.</span>brickWidth <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing)
+        y: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> row <span class="operator">*</span> (bricks<span class="operator">.</span>brickHeight <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing) <span class="operator">+</span> <span class="number">20</span>
+    }
+}</pre>
+<h2 id="step-3-updating-collision-logic">Step 3: Updating Collision Logic</h2>
+<p>To keep the code clean, we will add a <code translate="no">collides()</code> function to the Brick component in Brick.qml which will check if the ball is colliding with the brick.</p>
+<p><code translate="no">bx</code>, <code translate="no">by</code>, <code translate="no">bw</code>, <code translate="no">bh</code> parameters of the function represent the x and y coordinates of the ball and its width and height respectively.</p>
+<pre class="cpp" translate="no">function collides(bx<span class="operator">,</span> by<span class="operator">,</span> bw<span class="operator">,</span> bh) {
+    <span class="keyword">if</span> (destroyed)
+        <span class="keyword">return</span> <span class="keyword">false</span>
+
+    <span class="keyword">return</span> bx <span class="operator">&lt;</span> brick<span class="operator">.</span>x <span class="operator">+</span> brick<span class="operator">.</span>width <span class="operator">&amp;</span><span class="operator">&amp;</span>
+           bx <span class="operator">+</span> bw <span class="operator">&gt;</span> brick<span class="operator">.</span>x <span class="operator">&amp;</span><span class="operator">&amp;</span>
+           by <span class="operator">&lt;</span> brick<span class="operator">.</span>y <span class="operator">+</span> brick<span class="operator">.</span>height <span class="operator">&amp;</span><span class="operator">&amp;</span>
+           by <span class="operator">+</span> bh <span class="operator">&gt;</span> brick<span class="operator">.</span>y
+}</pre>
+<p>As the last step, update collision logic in the <code translate="no">Timer</code> to use the <code translate="no">collides()</code> function to check if the brick was hit and afterwards <code translate="no">hit()</code> function to increment the score:</p>
+<pre class="cpp" translate="no"><span class="comment">// Brick collisions</span>
+<span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+    let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+    <span class="keyword">if</span> (item <span class="operator">&amp;</span><span class="operator">&amp;</span> item<span class="operator">.</span>collides(ball<span class="operator">.</span>x<span class="operator">,</span> ball<span class="operator">.</span>y<span class="operator">,</span> ball<span class="operator">.</span>width<span class="operator">,</span> ball<span class="operator">.</span>height)) {
+        gameArea<span class="operator">.</span>score <span class="operator">+</span><span class="operator">=</span> item<span class="operator">.</span>hit()
+        ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+        <span class="keyword">break</span>
+    }
+}</pre>
+<h2 id="step-4-run-the-game">Step 4: Run the Game</h2>
+<ol class="1" type="1"><li>Build and run the project.</li>
+<li>Press <b>Space</b> to launch the ball.</li>
+<li>Use <b>Left</b> and <b>Right</b> arrow keys to move the paddle.</li>
+<li>Destroy all bricks to win!</li>
+</ol>
+<p class="centerAlign"><img src="images/arcanoid_p3_hitpoints.png" alt="" /></p><p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part3.html -->
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part6.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 6: Score Effects | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-create-the-floatingscore-component">Step 1: Create the FloatingScore Component</a></li>
+<li class="level1"><a href="#step-2-add-a-spawn-function-to-main-qml">Step 2: Add a Spawn Function to Main.qml</a></li>
+<li class="level1"><a href="#step-3-spawn-score-popups-on-brick-hit">Step 3: Spawn Score Popups on Brick Hit</a></li>
+<li class="level1"><a href="#step-4-run-the-game">Step 4: Run the Game</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 6: Score Effects</h1>
+<!-- $$$part6.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will add floating score popups that appear whenever a brick is hit. The text (e.g. &quot;+5&quot;, &quot;+10&quot;) will drift downward and fade out, giving the player satisfying visual feedback.</p>
+<h2 id="step-1-create-the-floatingscore-component">Step 1: Create the FloatingScore Component</h2>
+<p>Create a new file <code translate="no">FloatingScore.qml</code> in the <code translate="no">qml</code> directory. This component is a <code translate="no">Text</code> element that animates itself downward while fading out, then destroys itself automatically.</p>
+<pre class="cpp" translate="no">import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+Text {
+    id: floatingScore
+
+    property real startX: <span class="number">0</span>
+    property real startY: <span class="number">0</span>
+
+    x: startX
+    y: startY
+    color: <span class="string">&quot;yellow&quot;</span>
+    font<span class="operator">.</span>pixelSize: <span class="number">14</span>
+    font<span class="operator">.</span>bold: <span class="keyword">true</span>
+
+    opacity: <span class="number">1</span>
+
+    ParallelAnimation {
+        id: floatAnimation
+        running: <span class="keyword">false</span>
+
+        NumberAnimation {
+            target: floatingScore
+            property: <span class="string">&quot;y&quot;</span>
+            to: floatingScore<span class="operator">.</span>startY <span class="operator">+</span> <span class="number">40</span>
+            duration: <span class="number">600</span>
+            easing<span class="operator">.</span>type: Easing<span class="operator">.</span>OutQuad
+        }
+
+        NumberAnimation {
+            target: floatingScore
+            property: <span class="string">&quot;opacity&quot;</span>
+            to: <span class="number">0</span>
+            duration: <span class="number">600</span>
+            easing<span class="operator">.</span>type: Easing<span class="operator">.</span>InQuad
+        }
+
+        onStopped: floatingScore<span class="operator">.</span>destroy()
+    }
+
+    Component<span class="operator">.</span>onCompleted: floatAnimation<span class="operator">.</span>start()
+}</pre>
+<p>How it works:</p>
+<ul>
+<li><code translate="no">startX</code> and <code translate="no">startY</code> define where the popup appears (set at creation time).</li>
+<li>A <code translate="no">ParallelAnimation</code> runs two animations simultaneously:<ul>
+<li>The text drifts down by 40 pixels over 600ms (<code translate="no">Easing.OutQuad</code> &mdash; starts fast, decelerates).</li>
+<li>The text fades from fully opaque to invisible over 600ms (<code translate="no">Easing.InQuad</code> &mdash; starts slow, accelerates).</li>
+</ul>
+</li>
+<li>When the animation finishes, <code translate="no">onStopped</code> calls <code translate="no">destroy()</code> to remove the object from memory.</li>
+<li>The animation starts automatically via <code translate="no">Component.onCompleted</code>.</li>
+</ul>
+<h2 id="step-2-add-a-spawn-function-to-main-qml">Step 2: Add a Spawn Function to Main.qml</h2>
+<p>We need a way to dynamically create <code translate="no">FloatingScore</code> instances at runtime. Add a <code translate="no">Component</code> and a helper function inside <code translate="no">gameArea</code> in <code translate="no">Main.qml</code>:</p>
+<pre class="cpp" translate="no"><span class="comment">// Floating score component</span>
+Component {
+    id: floatingScoreComponent
+    FloatingScore {}
+}
+
+function spawnFloatingScore(px<span class="operator">,</span> py<span class="operator">,</span> points) {
+    <span class="keyword">if</span> (points <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) <span class="keyword">return</span>
+    var item <span class="operator">=</span> floatingScoreComponent<span class="operator">.</span>createObject(gameArea<span class="operator">,</span> {
+        <span class="string">&quot;text&quot;</span>: <span class="string">&quot;+&quot;</span> <span class="operator">+</span> points<span class="operator">,</span>
+        <span class="string">&quot;startX&quot;</span>: px<span class="operator">,</span>
+        <span class="string">&quot;startY&quot;</span>: py
+    })
+}</pre>
+<p>How it works:</p>
+<ul>
+<li><code translate="no">floatingScoreComponent</code> is a <code translate="no">Component</code> that wraps <code translate="no">FloatingScore</code>. This lets us create new instances dynamically using <code translate="no">createObject()</code>.</li>
+<li><code translate="no">spawnFloatingScore()</code> takes a position (<code translate="no">px</code>, <code translate="no">py</code>) and the <code translate="no">points</code> value.</li>
+<li>If <code translate="no">points</code> is 0, nothing is spawned (no popup for zero-score hits).</li>
+<li><code translate="no">createObject()</code> creates a new <code translate="no">FloatingScore</code> as a child of <code translate="no">gameArea</code>, passing the text and position as initial properties.</li>
+</ul>
+<h2 id="step-3-spawn-score-popups-on-brick-hit">Step 3: Spawn Score Popups on Brick Hit</h2>
+<p>Update the brick collision logic in the <code translate="no">Timer</code> to spawn a floating score after each hit. Replace the existing brick collision block with:</p>
+<pre class="cpp" translate="no"><span class="comment">// Brick collisions</span>
+<span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+    let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+    <span class="keyword">if</span> (item <span class="operator">&amp;</span><span class="operator">&amp;</span> item<span class="operator">.</span>collides(ball<span class="operator">.</span>x<span class="operator">,</span> ball<span class="operator">.</span>y<span class="operator">,</span> ball<span class="operator">.</span>width<span class="operator">,</span> ball<span class="operator">.</span>height)) {
+        let points <span class="operator">=</span> item<span class="operator">.</span>hit()
+        gameArea<span class="operator">.</span>score <span class="operator">+</span><span class="operator">=</span> points
+        gameArea<span class="operator">.</span>spawnFloatingScore(
+            item<span class="operator">.</span>x <span class="operator">+</span> item<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> <span class="number">10</span><span class="operator">,</span>
+            item<span class="operator">.</span>y<span class="operator">,</span>
+            points
+        )
+        ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+        <span class="keyword">break</span>
+    }
+}</pre>
+<p>Key changes:</p>
+<ul>
+<li>We store the return value of <code translate="no">item.hit()</code> in a local <code translate="no">points</code> variable.</li>
+<li>We pass <code translate="no">points</code> to both the score counter and <code translate="no">spawnFloatingScore()</code>.</li>
+<li>The popup is positioned at the horizontal center of the brick (offset by 10 pixels to roughly center the text).</li>
+</ul>
+<h2 id="step-4-run-the-game">Step 4: Run the Game</h2>
+<ol class="1" type="1"><li>Build and run the project.</li>
+<li>Press <b>Space</b> to launch the ball.</li>
+<li>Hit a magenta brick &mdash; a yellow &quot;+5&quot; floats down and fades out.</li>
+<li>Hit a steelblue brick &mdash; a yellow &quot;+10&quot; floats down as the brick is destroyed.</li>
+<li>Zero-score hits produce no popup.</li>
+</ol>
+<p class="centerAlign"><img src="images/arcanoid_p6_scoreeffects.png" alt="" /></p><p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part6.html -->
+</body>
+</html>

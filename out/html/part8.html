@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part8.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 8: Sound Effects | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-prepare-sound-assets">Step 1: Prepare Sound Assets</a></li>
+<li class="level1"><a href="#step-2-create-soundeffects-qml">Step 2: Create SoundEffects.qml</a></li>
+<li class="level1"><a href="#step-3-add-soundeffects-to-main-qml">Step 3: Add SoundEffects to Main.qml</a></li>
+<li class="level1"><a href="#step-4-trigger-sounds-on-wall-bounce">Step 4: Trigger Sounds on Wall Bounce</a></li>
+<li class="level1"><a href="#step-5-trigger-sound-on-paddle-hit">Step 5: Trigger Sound on Paddle Hit</a></li>
+<li class="level1"><a href="#step-6-trigger-sounds-on-brick-collision">Step 6: Trigger Sounds on Brick Collision</a></li>
+<li class="level1"><a href="#step-7-trigger-sounds-on-life-loss-and-game-over">Step 7: Trigger Sounds on Life Loss and Game Over</a></li>
+<li class="level1"><a href="#step-8-trigger-sound-on-ball-launch">Step 8: Trigger Sound on Ball Launch</a></li>
+<li class="level1"><a href="#step-9-deploy-sound-assets">Step 9: Deploy Sound Assets</a></li>
+<li class="level1"><a href="#summary">Summary</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 8: Sound Effects</h1>
+<!-- $$$part8.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will add sound effects to the game. Audio feedback makes the gameplay feel more responsive and satisfying. We will create a reusable <code translate="no">SoundEffects</code> component and trigger sounds on key gameplay events: paddle hits, wall bounces, brick collisions, life loss, game over, level completion, and ball launch.</p>
+<h2 id="step-1-prepare-sound-assets">Step 1: Prepare Sound Assets</h2>
+<p>Create a folder <code translate="no">assets/sounds/</code> in your project and place the following <code translate="no">.wav</code> files inside:</p>
+<ul>
+<li><code translate="no">paddle.wav</code> &mdash; ball hits the paddle</li>
+<li><code translate="no">brick_hit.wav</code> &mdash; brick is damaged but survives</li>
+<li><code translate="no">brick_destroy.wav</code> &mdash; brick is destroyed</li>
+<li><code translate="no">wall.wav</code> &mdash; ball bounces off a wall or ceiling</li>
+<li><code translate="no">lose_life.wav</code> &mdash; ball falls off screen</li>
+<li><code translate="no">game_over.wav</code> &mdash; last life lost</li>
+<li><code translate="no">level_complete.wav</code> &mdash; all bricks destroyed</li>
+<li><code translate="no">launch.wav</code> &mdash; ball is launched with Space</li>
+</ul>
+<p>You can generate retro sound effects for free using tools like <a href="https://sfxr.me/">sfxr</a> or download them from <a href="https://freesound.org">freesound.org</a>.</p>
+<h2 id="step-2-create-soundeffects-qml">Step 2: Create SoundEffects.qml</h2>
+<p>To keep <code translate="no">Main.qml</code> clean, we extract all sound definitions into a separate component. Create a new file <code translate="no">qml/SoundEffects.qml</code>:</p>
+<pre class="cpp" translate="no">import Felgo <span class="number">4.0</span>
+import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+Item {
+    property alias paddle: sfxPaddle
+    property alias brickHit: sfxBrickHit
+    property alias brickDestroy: sfxBrickDestroy
+    property alias wall: sfxWall
+    property alias loseLife: sfxLoseLife
+    property alias gameOver: sfxGameOver
+    property alias levelComplete: sfxLevelComplete
+    property alias launch: sfxLaunch
+
+    GameSoundEffect {
+        id: sfxPaddle
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/paddle.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxBrickHit
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/brick_hit.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxBrickDestroy
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/brick_destroy.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxWall
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/wall.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxLoseLife
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/lose_life.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxGameOver
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/game_over.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxLevelComplete
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/level_complete.wav&quot;</span>)
+    }
+    GameSoundEffect {
+        id: sfxLaunch
+        source: <span class="type">Qt</span><span class="operator">.</span>resolvedUrl(<span class="string">&quot;../assets/sounds/launch.wav&quot;</span>)
+    }
+}</pre>
+<p>Each <code translate="no">GameSoundEffect</code> loads a single audio file. The <code translate="no">property</code> <code translate="no">alias</code> declarations expose each sound through a clean public API.</p>
+<h2 id="step-3-add-soundeffects-to-main-qml">Step 3: Add SoundEffects to Main.qml</h2>
+<p>In your <code translate="no">Scene</code> block inside <code translate="no">Main.qml</code>, instantiate the component:</p>
+<pre class="cpp" translate="no">SoundEffects {
+    id: sfx
+}</pre>
+<p>All sounds are now accessible as <code translate="no">sfx.paddle</code>, <code translate="no">sfx.wall</code>, etc.</p>
+<h2 id="step-4-trigger-sounds-on-wall-bounce">Step 4: Trigger Sounds on Wall Bounce</h2>
+<p>In the Timer's <code translate="no">onTriggered</code> handler, add <code translate="no">sfx.wall.play()</code> when the ball bounces off a wall or the ceiling:</p>
+<pre class="cpp" translate="no"><span class="comment">// Wall bounce</span>
+<span class="keyword">if</span> (ball<span class="operator">.</span>x <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">|</span><span class="operator">|</span> ball<span class="operator">.</span>x <span class="operator">+</span> ball<span class="operator">.</span>width <span class="operator">&gt;</span><span class="operator">=</span> gameArea<span class="operator">.</span>width) {
+    ball<span class="operator">.</span>ballSpeedX <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+    sfx<span class="operator">.</span>wall<span class="operator">.</span>play()         <span class="comment">// &lt;= wall hitting sound</span>
+}
+
+<span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) {
+    ball<span class="operator">.</span>y <span class="operator">=</span> <span class="number">1</span>
+    ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+    sfx<span class="operator">.</span>wall<span class="operator">.</span>play()         <span class="comment">// &lt;= wall hitting sound</span>
+}</pre>
+<h2 id="step-5-trigger-sound-on-paddle-hit">Step 5: Trigger Sound on Paddle Hit</h2>
+<p>In the paddle collision block, play the paddle sound:</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">+</span> ball<span class="operator">.</span>height <span class="operator">&gt;</span><span class="operator">=</span> paddle<span class="operator">.</span>y <span class="operator">&amp;</span><span class="operator">&amp;</span>
+    ball<span class="operator">.</span>x <span class="operator">+</span> ball<span class="operator">.</span>width <span class="operator">&gt;</span><span class="operator">=</span> paddle<span class="operator">.</span>x <span class="operator">&amp;</span><span class="operator">&amp;</span>
+    ball<span class="operator">.</span>x <span class="operator">&lt;</span><span class="operator">=</span> paddle<span class="operator">.</span>x <span class="operator">+</span> paddle<span class="operator">.</span>width) {
+    ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+    sfx<span class="operator">.</span>paddle<span class="operator">.</span>play()       <span class="comment">// &lt;= paddle hitting sound</span>
+}</pre>
+<h2 id="step-6-trigger-sounds-on-brick-collision">Step 6: Trigger Sounds on Brick Collision</h2>
+<p>Inside the brick collision loop, play a different sound depending on whether the brick was destroyed or just damaged:</p>
+<pre class="cpp" translate="no"><span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+    let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+    <span class="keyword">if</span> (item <span class="operator">&amp;</span><span class="operator">&amp;</span> item<span class="operator">.</span>collides(ball<span class="operator">.</span>x<span class="operator">,</span> ball<span class="operator">.</span>y<span class="operator">,</span> ball<span class="operator">.</span>width<span class="operator">,</span> ball<span class="operator">.</span>height)) {
+        let points <span class="operator">=</span> item<span class="operator">.</span>hit()
+        gameArea<span class="operator">.</span>score <span class="operator">+</span><span class="operator">=</span> points
+        gameArea<span class="operator">.</span>spawnFloatingScore(
+            item<span class="operator">.</span>x <span class="operator">+</span> item<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> <span class="number">10</span><span class="operator">,</span>
+            item<span class="operator">.</span>y<span class="operator">,</span>
+            points
+        )
+        ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+
+        <span class="keyword">if</span> (item<span class="operator">.</span>destroyed)
+            sfx<span class="operator">.</span>brickDestroy<span class="operator">.</span>play()     <span class="comment">// &lt;= brick destroyed sound</span>
+        <span class="keyword">else</span>
+            sfx<span class="operator">.</span>brickHit<span class="operator">.</span>play()         <span class="comment">// &lt;= brick hit sound</span>
+
+        <span class="keyword">if</span> (gameArea<span class="operator">.</span>checkLevelFinished()) {
+            gameArea<span class="operator">.</span>levelFinished <span class="operator">=</span> <span class="keyword">true</span>
+            ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+            sfx<span class="operator">.</span>levelComplete<span class="operator">.</span>play()        <span class="comment">// &lt;= level finished sound</span>
+        }
+
+        <span class="keyword">break</span>
+    }
+}</pre>
+<h2 id="step-7-trigger-sounds-on-life-loss-and-game-over">Step 7: Trigger Sounds on Life Loss and Game Over</h2>
+<p>When the ball falls off screen, play either the game-over or lose-life sound:</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&gt;</span> gameArea<span class="operator">.</span>height) {
+    gameArea<span class="operator">.</span>lives <span class="operator">-</span><span class="operator">=</span> <span class="number">1</span>
+    <span class="keyword">if</span> (gameArea<span class="operator">.</span>lives <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) {
+        gameArea<span class="operator">.</span>lives <span class="operator">=</span> <span class="number">0</span>
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+        gameArea<span class="operator">.</span>gameOver <span class="operator">=</span> <span class="keyword">true</span>
+        sfx<span class="operator">.</span>gameOver<span class="operator">.</span>play()         <span class="comment">// &lt;= game over sound</span>
+    } <span class="keyword">else</span> {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+        sfx<span class="operator">.</span>loseLife<span class="operator">.</span>play()         <span class="comment">// &lt;= life lost sound</span>
+    }
+}</pre>
+<h2 id="step-8-trigger-sound-on-ball-launch">Step 8: Trigger Sound on Ball Launch</h2>
+<p>In the <code translate="no">Keys.onPressed</code> handler, play the launch sound when the player presses Space to release the ball:</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Space) {
+    <span class="keyword">if</span> (gameArea<span class="operator">.</span>gameOver <span class="operator">|</span><span class="operator">|</span> gameArea<span class="operator">.</span>levelFinished) {
+        gameArea<span class="operator">.</span>initGame()
+    } <span class="keyword">else</span> <span class="keyword">if</span> (ball<span class="operator">.</span>ballStuck) {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">false</span>
+        sfx<span class="operator">.</span>launch<span class="operator">.</span>play()           <span class="comment">// &lt;= launch sound</span>
+    }
+}</pre>
+<h2 id="step-9-deploy-sound-assets">Step 9: Deploy Sound Assets</h2>
+<p>Make sure the sound files are included in your build. In <code translate="no">CMakeLists.txt</code>, add the assets folder to resource deployment:</p>
+<pre class="cpp" translate="no">deploy_resources(<span class="string">&quot;assets/sounds&quot;</span>)</pre>
+<h2 id="summary">Summary</h2>
+<p>We created a dedicated <code translate="no">SoundEffects</code> component that encapsulates all audio assets and provides a clean alias-based API. Sounds are triggered at eight key gameplay moments:</p>
+<div class="table"><table class="generic">
+ <thead><tr class="qt-style"><th >Sound</th><th >Event</th></tr></thead>
+<tr valign="top" class="odd"><td ><code translate="no">sfx.paddle</code></td><td >Ball hits the paddle</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">sfx.wall</code></td><td >Ball bounces off wall or ceiling</td></tr>
+<tr valign="top" class="odd"><td ><code translate="no">sfx.brickHit</code></td><td >Brick is hit but survives</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">sfx.brickDestroy</code></td><td >Brick is destroyed</td></tr>
+<tr valign="top" class="odd"><td ><code translate="no">sfx.loseLife</code></td><td >Ball falls off screen (lives remain)</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">sfx.gameOver</code></td><td >Last life is lost</td></tr>
+<tr valign="top" class="odd"><td ><code translate="no">sfx.levelComplete</code></td><td >All bricks destroyed</td></tr>
+<tr valign="top" class="even"><td ><code translate="no">sfx.launch</code></td><td >Ball launched with Space</td></tr>
+</table></div>
+<p>The game now provides satisfying audio feedback on every interaction.</p>
+<p>As the possible next steps, we could think about adding background music or additional levels, as well as various bonus items (like ball slowdown, sticking, extra lives etc.)</p>
+<p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part8.html -->
+</body>
+</html>

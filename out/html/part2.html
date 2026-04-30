@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part2.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 2: Score | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-adding-score-counter">Step 1: Adding Score Counter</a></li>
+<li class="level1"><a href="#step-2-adding-score-display">Step 2: Adding Score Display</a></li>
+<li class="level1"><a href="#step-3-incrementing-score-on-brick-destruction">Step 3: Incrementing Score on Brick Destruction</a></li>
+<li class="level1"><a href="#step-4-run-the-game">Step 4: Run the Game</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 2: Score</h1>
+<!-- $$$part2.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will extend our Arcanoid game by adding a score counter that increments every time a brick is destroyed.</p>
+<h2 id="step-1-adding-score-counter">Step 1: Adding Score Counter</h2>
+<p>Now we will extend the game by adding score counter.</p>
+<p>First, we add a score property to the <code translate="no">gameArea</code>:</p>
+<pre class="cpp" translate="no">property <span class="type">int</span> score: <span class="number">0</span></pre>
+<h2 id="step-2-adding-score-display">Step 2: Adding Score Display</h2>
+<p>Now we will add a text element to display the score in the top-left corner of the game area. Add the following code inside the <code translate="no">gameArea</code>:</p>
+<pre class="cpp" translate="no">Text {
+    text: <span class="string">&quot;Score: &quot;</span> <span class="operator">+</span> gameArea<span class="operator">.</span>score
+    color: <span class="string">&quot;white&quot;</span>
+    font<span class="operator">.</span>pixelSize: <span class="number">14</span>
+    anchors<span class="operator">.</span>right: parent<span class="operator">.</span>right
+    anchors<span class="operator">.</span>top: parent<span class="operator">.</span>top
+    anchors<span class="operator">.</span>margins: <span class="number">2</span>
+}</pre>
+<p>To ensure the score display fits well, we need to shift our bricks a bit down. Find the code where we create the bricks and increment the <code translate="no">y</code> position by, say, 20 points:</p>
+<pre class="cpp" translate="no">x: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> col <span class="operator">*</span> (bricks<span class="operator">.</span>brickWidth <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing)
+y: bricks<span class="operator">.</span>brickSpacing <span class="operator">+</span> row <span class="operator">*</span> (bricks<span class="operator">.</span>brickHeight <span class="operator">+</span> bricks<span class="operator">.</span>brickSpacing) <span class="operator">+</span> <span class="number">20</span></pre>
+<h2 id="step-3-incrementing-score-on-brick-destruction">Step 3: Incrementing Score on Brick Destruction</h2>
+<p>Lets add 10 points for every discarded brick by default. Add just one line after item.destroyed = true:</p>
+<pre class="cpp" translate="no">item<span class="operator">.</span>destroyed <span class="operator">=</span> <span class="keyword">true</span>
+ball<span class="operator">.</span>ballSpeedY <span class="operator">*</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>
+
+<span class="comment">// increment score</span>
+gameArea<span class="operator">.</span>score <span class="operator">+</span><span class="operator">=</span> <span class="number">10</span>
+
+<span class="keyword">break</span></pre>
+<h2 id="step-4-run-the-game">Step 4: Run the Game</h2>
+<ol class="1" type="1"><li>Build and run the project.</li>
+<li>Press <b>Space</b> to launch the ball.</li>
+<li>Use <b>Left</b> and <b>Right</b> arrow keys to move the paddle.</li>
+<li>Destroy all bricks to win!</li>
+</ol>
+<p class="centerAlign"><img src="images/arcanoid_p2_score.png" alt="" /></p><p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part2.html -->
+</body>
+</html>

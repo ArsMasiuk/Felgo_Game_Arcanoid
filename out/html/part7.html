@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part7.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 7: Level Finished | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-add-level-finished-property">Step 1: Add Level Finished Property</a></li>
+<li class="level1"><a href="#step-2-add-a-check-function">Step 2: Add a Check Function</a></li>
+<li class="level1"><a href="#step-3-update-initgame">Step 3: Update initGame</a></li>
+<li class="level1"><a href="#step-4-stop-the-timer">Step 4: Stop the Timer</a></li>
+<li class="level1"><a href="#step-5-detect-level-completion">Step 5: Detect Level Completion</a></li>
+<li class="level1"><a href="#step-6-create-the-levelfinishedscreen-component">Step 6: Create the LevelFinishedScreen Component</a></li>
+<li class="level1"><a href="#step-7-add-the-screen-to-main-qml">Step 7: Add the Screen to Main.qml</a></li>
+<li class="level1"><a href="#step-8-update-key-handling">Step 8: Update Key Handling</a></li>
+<li class="level1"><a href="#step-9-run-the-game">Step 9: Run the Game</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 7: Level Finished</h1>
+<!-- $$$part7.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will add a &quot;Level Complete&quot; screen that appears when the player destroys all bricks. The game pauses, shows the final score, and lets the player restart by pressing Space.</p>
+<h2 id="step-1-add-level-finished-property">Step 1: Add Level Finished Property</h2>
+<p>Add a <code translate="no">levelFinished</code> property to <code translate="no">gameArea</code>, next to the existing <code translate="no">gameOver</code> property:</p>
+<pre class="cpp" translate="no">property <span class="type">bool</span> gameOver: <span class="keyword">false</span>
+property <span class="type">bool</span> levelFinished: <span class="keyword">false</span></pre>
+<h2 id="step-2-add-a-check-function">Step 2: Add a Check Function</h2>
+<p>We need a function that checks whether all bricks have been destroyed. Add the following inside <code translate="no">gameArea</code>:</p>
+<pre class="cpp" translate="no">function checkLevelFinished() {
+    <span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+        let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+        <span class="keyword">if</span> (item <span class="operator">&amp;</span><span class="operator">&amp;</span> <span class="operator">!</span>item<span class="operator">.</span>destroyed)
+            <span class="keyword">return</span> <span class="keyword">false</span>
+    }
+    <span class="keyword">return</span> <span class="keyword">true</span>
+}</pre>
+<p>The function iterates over every brick. If any brick is not destroyed, it returns <code translate="no">false</code>. If the loop completes, all bricks are gone and it returns <code translate="no">true</code>.</p>
+<h2 id="step-3-update-initgame">Step 3: Update initGame</h2>
+<p>Add <code translate="no">levelFinished = false</code> to the <code translate="no">initGame()</code> function so the state resets properly on restart:</p>
+<pre class="cpp" translate="no">function initGame() {
+    score <span class="operator">=</span> <span class="number">0</span>
+    lives <span class="operator">=</span> <span class="number">5</span>
+    gameOver <span class="operator">=</span> <span class="keyword">false</span>
+    levelFinished <span class="operator">=</span> <span class="keyword">false</span>
+    <span class="operator">.</span><span class="operator">.</span><span class="operator">.</span>
+}</pre>
+<h2 id="step-4-stop-the-timer">Step 4: Stop the Timer</h2>
+<p>The game loop should stop when the level is finished. Update the Timer's <code translate="no">running</code> property:</p>
+<pre class="cpp" translate="no">running: <span class="operator">!</span>gameArea<span class="operator">.</span>gameOver <span class="operator">&amp;</span><span class="operator">&amp;</span> <span class="operator">!</span>gameArea<span class="operator">.</span>levelFinished</pre>
+<h2 id="step-5-detect-level-completion">Step 5: Detect Level Completion</h2>
+<p>After a brick is destroyed in the collision logic, check if all bricks are gone. Add the following after the <code translate="no">ball.ballSpeedY *= -1</code> line inside the brick collision block:</p>
+<pre class="cpp" translate="no"><span class="comment">// Check if all bricks destroyed</span>
+<span class="keyword">if</span> (gameArea<span class="operator">.</span>checkLevelFinished()) {
+    gameArea<span class="operator">.</span>levelFinished <span class="operator">=</span> <span class="keyword">true</span>
+    ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+}</pre>
+<p>When all bricks are destroyed:</p>
+<ul>
+<li><code translate="no">levelFinished</code> is set to <code translate="no">true</code>, which stops the Timer.</li>
+<li>The ball is stuck to the paddle so it stops moving.</li>
+</ul>
+<h2 id="step-6-create-the-levelfinishedscreen-component">Step 6: Create the LevelFinishedScreen Component</h2>
+<p>Create a new file <code translate="no">LevelFinishedScreen.qml</code> in the <code translate="no">qml</code> directory. It follows the same pattern as <code translate="no">GameOverScreen</code> but with a victory message:</p>
+<pre class="cpp" translate="no">import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+Rectangle {
+    id: levelFinishedScreen
+
+    anchors<span class="operator">.</span>fill: parent
+    color: <span class="string">&quot;#CC000000&quot;</span>
+    visible: <span class="keyword">false</span>
+
+    property <span class="type">int</span> score: <span class="number">0</span>
+
+    signal restartRequested()
+
+    Column {
+        anchors<span class="operator">.</span>centerIn: parent
+        spacing: <span class="number">10</span>
+
+        Text {
+            text: <span class="string">&quot;LEVEL COMPLETE!&quot;</span>
+            color: <span class="string">&quot;lime&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">32</span>
+            font<span class="operator">.</span>bold: <span class="keyword">true</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+
+        Text {
+            text: <span class="string">&quot;Score: &quot;</span> <span class="operator">+</span> levelFinishedScreen<span class="operator">.</span>score
+            color: <span class="string">&quot;white&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">18</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+
+        Text {
+            text: <span class="string">&quot;Press Space to play again&quot;</span>
+            color: <span class="string">&quot;white&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">14</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+    }
+}</pre>
+<p>Key differences from <code translate="no">GameOverScreen</code>:</p>
+<ul>
+<li>Title says &quot;LEVEL COMPLETE!&quot; in lime green instead of &quot;GAME OVER&quot; in red.</li>
+<li>Prompt says &quot;Press Space to play again&quot;.</li>
+</ul>
+<h2 id="step-7-add-the-screen-to-main-qml">Step 7: Add the Screen to Main.qml</h2>
+<p>Add the <code translate="no">LevelFinishedScreen</code> inside the <code translate="no">Scene</code>, next to the <code translate="no">GameOverScreen</code>:</p>
+<pre class="cpp" translate="no">LevelFinishedScreen {
+    id: levelFinishedScreen
+    score: gameArea<span class="operator">.</span>score
+    visible: gameArea<span class="operator">.</span>levelFinished
+
+    onRestartRequested: gameArea<span class="operator">.</span>initGame()
+}</pre>
+<h2 id="step-8-update-key-handling">Step 8: Update Key Handling</h2>
+<p>Update the Space key handler to also restart from the level finished state:</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Space) {
+    <span class="keyword">if</span> (gameArea<span class="operator">.</span>gameOver <span class="operator">|</span><span class="operator">|</span> gameArea<span class="operator">.</span>levelFinished) {
+        gameArea<span class="operator">.</span>initGame()
+        event<span class="operator">.</span>accepted <span class="operator">=</span> <span class="keyword">true</span>
+    } <span class="keyword">else</span> <span class="keyword">if</span> (ball<span class="operator">.</span>ballStuck) {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">false</span>
+        event<span class="operator">.</span>accepted <span class="operator">=</span> <span class="keyword">true</span>
+    }
+}</pre>
+<p>Now pressing Space restarts the game from both the Game Over and Level Complete screens.</p>
+<h2 id="step-9-run-the-game">Step 9: Run the Game</h2>
+<ol class="1" type="1"><li>Build and run the project.</li>
+<li>Press <b>Space</b> to launch the ball.</li>
+<li>Destroy all bricks.</li>
+<li>The &quot;LEVEL COMPLETE!&quot; screen appears with your final score.</li>
+<li>Press <b>Space</b> to restart.</li>
+</ol>
+<p class="centerAlign"><img src="images/arcanoid_p7_levelfinished.png" alt="" /></p><p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part7.html -->
+</body>
+</html>

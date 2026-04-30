@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+<!-- part4.qdoc -->
+  <title>Arcanoid Game Tutorial - Part 4: Lives | Arcanoid</title>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="sidebar">
+<div class="toc">
+<h3 id="toc">Contents</h3>
+<ul>
+<li class="level1"><a href="#step-1-adding-lives-property">Step 1: Adding Lives Property</a></li>
+<li class="level1"><a href="#step-2-adding-lives-display">Step 2: Adding Lives Display</a></li>
+<li class="level1"><a href="#step-3-losing-a-life">Step 3: Losing a Life</a></li>
+<li class="level1"><a href="#step-4-run-the-game">Step 4: Run the Game</a></li>
+<li class="level1"><a href="#step-5-add-game-over-screen">Step 5: Add Game Over Screen</a></li>
+<li class="level1"><a href="#step-6-add-game-over-logic">Step 6: Add Game Over Logic</a></li>
+<li class="level1"><a href="#step-6-run-the-game">Step 6: Run the Game</a></li>
+<li class="level1"><a href="#step-7-refactor-game-state-initialization">Step 7: Refactor Game State Initialization</a></li>
+</ul>
+</div>
+<div class="sidebar-content" id="sidebar-content"></div></div>
+<h1 class="title">Arcanoid Game Tutorial - Part 4: Lives</h1>
+<!-- $$$part4.html-description -->
+<div class="descr" id="details">
+<p><a href="index.html">Back to Index</a></p>
+<p>In this part of the tutorial, we will add a lives system to our Arcanoid game. The player starts with 5 balls. Each time the ball falls below the screen, one life is lost. When all lives are gone, the game is over.</p>
+<h2 id="step-1-adding-lives-property">Step 1: Adding Lives Property</h2>
+<p>Add a <code translate="no">lives</code> property to the <code translate="no">gameArea</code>, next to the existing <code translate="no">score</code> property:</p>
+<pre class="cpp" translate="no"><span class="comment">// game variables</span>
+property <span class="type">int</span> score: <span class="number">0</span>
+property <span class="type">int</span> lives: <span class="number">5</span></pre>
+<h2 id="step-2-adding-lives-display">Step 2: Adding Lives Display</h2>
+<p>Add a <code translate="no">Text</code> element to show the remaining lives in the top-right corner of the game area, next to the existing score display:</p>
+<pre class="cpp" translate="no"><span class="comment">// Lives display</span>
+Text {
+    text: <span class="string">&quot;Lives: &quot;</span> <span class="operator">+</span> gameArea<span class="operator">.</span>lives
+    color: <span class="string">&quot;white&quot;</span>
+    font<span class="operator">.</span>pixelSize: <span class="number">14</span>
+    anchors<span class="operator">.</span>right: parent<span class="operator">.</span>right
+    anchors<span class="operator">.</span>top: parent<span class="operator">.</span>top
+    anchors<span class="operator">.</span>margins: <span class="number">2</span>
+}</pre>
+<p>Now the player can see both the score on the left and the remaining lives on the right.</p>
+<h2 id="step-3-losing-a-life">Step 3: Losing a Life</h2>
+<p>Previously, when the ball fell below the screen, it was simply reattached to the paddle:</p>
+<pre class="cpp" translate="no"><span class="comment">// Bottom → reset and stick again</span>
+<span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&gt;</span> gameArea<span class="operator">.</span>height) {
+    ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+}</pre>
+<p>Now we need to decrement the lives counter each time this happens. Replace the code above with:</p>
+<pre class="cpp" translate="no"><span class="comment">// Bottom → lose a life and stick again</span>
+<span class="keyword">if</span> (ball<span class="operator">.</span>y <span class="operator">&gt;</span> gameArea<span class="operator">.</span>height) {
+    gameArea<span class="operator">.</span>lives <span class="operator">-</span><span class="operator">=</span> <span class="number">1</span>
+    <span class="keyword">if</span> (gameArea<span class="operator">.</span>lives <span class="operator">&lt;</span><span class="operator">=</span> <span class="number">0</span>) {
+        gameArea<span class="operator">.</span>lives <span class="operator">=</span> <span class="number">0</span>
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+        <span class="comment">// TODO: show game over screen</span>
+    } <span class="keyword">else</span> {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+    }
+}</pre>
+<h2 id="step-4-run-the-game">Step 4: Run the Game</h2>
+<p>Compile and run the game. You should see the lives counter in the top-right corner.</p>
+<p class="centerAlign"><img src="images/arcanoid_p4_lives.png" alt="" /></p><h2 id="step-5-add-game-over-screen">Step 5: Add Game Over Screen</h2>
+<p>When the player runs out of lives, we want to show a game over message and stop the game. For the game over screen, we use a <code translate="no">Rectangle</code> with some <code translate="no">Text</code> elements that are initially hidden and become visible when the game is over.</p>
+<p>Let's implement this logic in the GameOverScreen component. For this, we will create a new QML file named <code translate="no">GameOverScreen.qml</code> in the <code translate="no">qml</code> directory. This component will display a &quot;Game Over&quot; message and the final score when the player loses all lives. It will also have a signal <code translate="no">restartRequested()</code> to request a game restart.</p>
+<pre class="cpp" translate="no">import <span class="type">QtQuick</span> <span class="number">2.0</span>
+
+Rectangle {
+    id: gameOverScreen
+
+    anchors<span class="operator">.</span>fill: parent
+    color: <span class="string">&quot;#CC000000&quot;</span>
+    visible: <span class="keyword">false</span>
+
+    property <span class="type">int</span> score: <span class="number">0</span>
+
+    signal restartRequested()
+
+    Column {
+        anchors<span class="operator">.</span>centerIn: parent
+        spacing: <span class="number">10</span>
+
+        Text {
+            text: <span class="string">&quot;GAME OVER&quot;</span>
+            color: <span class="string">&quot;red&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">32</span>
+            font<span class="operator">.</span>bold: <span class="keyword">true</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+
+        Text {
+            text: <span class="string">&quot;Score: &quot;</span> <span class="operator">+</span> gameOverScreen<span class="operator">.</span>score
+            color: <span class="string">&quot;white&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">18</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+
+        Text {
+            text: <span class="string">&quot;Press Space to restart&quot;</span>
+            color: <span class="string">&quot;white&quot;</span>
+            font<span class="operator">.</span>pixelSize: <span class="number">14</span>
+            anchors<span class="operator">.</span>horizontalCenter: parent<span class="operator">.</span>horizontalCenter
+        }
+    }
+}</pre>
+<h2 id="step-6-add-game-over-logic">Step 6: Add Game Over Logic</h2>
+<p>Now add gameOver property to the <code translate="no">gameArea</code> to track whether the game is over:</p>
+<pre class="cpp" translate="no">property <span class="type">bool</span> gameOver: <span class="keyword">false</span></pre>
+<p>Then we will add a <code translate="no">GameOverScreen</code> component to the main game area and show it when the player loses all lives. Let's put it inside gameArea (after the Timer, before closing }):</p>
+<pre class="cpp" translate="no"><span class="comment">// Game Over screen</span>
+GameOverScreen {
+    id: gameOverScreen
+    score: gameArea<span class="operator">.</span>score
+    visible: gameArea<span class="operator">.</span>gameOver
+
+    onRestartRequested: {
+        gameArea<span class="operator">.</span>score <span class="operator">=</span> <span class="number">0</span>
+        gameArea<span class="operator">.</span>lives <span class="operator">=</span> <span class="number">5</span>
+        gameArea<span class="operator">.</span>gameOver <span class="operator">=</span> <span class="keyword">false</span>
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+        ball<span class="operator">.</span>ballSpeedX <span class="operator">=</span> <span class="number">3</span>
+        ball<span class="operator">.</span>ballSpeedY <span class="operator">=</span> <span class="number">3</span>
+        paddle<span class="operator">.</span>x <span class="operator">=</span> gameArea<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> paddle<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span>
+
+        <span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+            let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+            <span class="keyword">if</span> (item) {
+                let row <span class="operator">=</span> Math<span class="operator">.</span>floor(i <span class="operator">/</span> bricks<span class="operator">.</span>cols)
+                item<span class="operator">.</span>hitPoints <span class="operator">=</span> row <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">?</span> <span class="number">2</span> : <span class="number">1</span>
+                item<span class="operator">.</span>destroyed <span class="operator">=</span> <span class="keyword">false</span>
+            }
+        }
+    }
+}</pre>
+<p>When the game is over, stop the <code translate="no">Timer</code> by setting its <code translate="no">running</code> property to:</p>
+<pre class="cpp" translate="no">running: <span class="operator">!</span>gameArea<span class="operator">.</span>gameOver</pre>
+<p>To complete the implementation, we need to set the <code translate="no">gameOver</code> property to <code translate="no">true</code> when the player loses all lives. Put the following code in the place of the <code translate="no">TODO</code> comment in the lives losing logic:</p>
+<pre class="cpp" translate="no">gameArea<span class="operator">.</span>gameOver <span class="operator">=</span> <span class="keyword">true</span></pre>
+<p>The last step is to reset the game state when the player requests a restart by pressing Space button. Update Keys.onPressed with the following code:</p>
+<pre class="cpp" translate="no"><span class="keyword">if</span> (event<span class="operator">.</span>key <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="type">Qt</span><span class="operator">.</span>Key_Space) {
+    <span class="keyword">if</span> (gameArea<span class="operator">.</span>gameOver) {
+        gameOverScreen<span class="operator">.</span>restartRequested()
+        event<span class="operator">.</span>accepted <span class="operator">=</span> <span class="keyword">true</span>
+    } <span class="keyword">else</span> <span class="keyword">if</span> (ball<span class="operator">.</span>ballStuck) {
+        ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">false</span>
+        event<span class="operator">.</span>accepted <span class="operator">=</span> <span class="keyword">true</span>
+    }
+}</pre>
+<h2 id="step-6-run-the-game">Step 6: Run the Game</h2>
+<p>Compile and run the game again. You will see &quot;Game Over&quot; screen after loosing all balls.</p>
+<p class="centerAlign"><img src="images/arcanoid_p4_gameover.png" alt="" /></p><h2 id="step-7-refactor-game-state-initialization">Step 7: Refactor Game State Initialization</h2>
+<p>To make the code cleaner, we can refactor the game state initialization logic into a separate function. Put the following function inside the <code translate="no">gameArea</code>, next to the existing properties:</p>
+<pre class="cpp" translate="no"><span class="comment">// Initialization function to reset the game state</span>
+function initGame() {
+    score <span class="operator">=</span> <span class="number">0</span>
+    lives <span class="operator">=</span> <span class="number">5</span>
+    gameOver <span class="operator">=</span> <span class="keyword">false</span>
+    ball<span class="operator">.</span>ballStuck <span class="operator">=</span> <span class="keyword">true</span>
+    ball<span class="operator">.</span>ballSpeedX <span class="operator">=</span> <span class="number">3</span>
+    ball<span class="operator">.</span>ballSpeedY <span class="operator">=</span> <span class="number">3</span>
+    paddle<span class="operator">.</span>x <span class="operator">=</span> gameArea<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span> <span class="operator">-</span> paddle<span class="operator">.</span>width <span class="operator">/</span> <span class="number">2</span>
+    <span class="keyword">for</span> (let i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> bricks<span class="operator">.</span>count; i<span class="operator">+</span><span class="operator">+</span>) {
+        let item <span class="operator">=</span> bricks<span class="operator">.</span>itemAt(i)
+        <span class="keyword">if</span> (item) {
+            let row <span class="operator">=</span> Math<span class="operator">.</span>floor(i <span class="operator">/</span> bricks<span class="operator">.</span>cols)
+            item<span class="operator">.</span>hitPoints <span class="operator">=</span> row <span class="operator">=</span><span class="operator">=</span><span class="operator">=</span> <span class="number">0</span> <span class="operator">?</span> <span class="number">2</span> : <span class="number">1</span>
+            item<span class="operator">.</span>destroyed <span class="operator">=</span> <span class="keyword">false</span>
+        }
+    }
+}</pre>
+<p>Then we can call this function both in the <code translate="no">onRestartRequested</code> handler of the <code translate="no">GameOverScreen</code> and in the <code translate="no">Component.onCompleted</code> handler of the <code translate="no">gameArea</code> to initialize the game state when the game starts.</p>
+<pre class="cpp" translate="no">(somewhere inside gameArea)
+
+Component<span class="operator">.</span>onCompleted: initGame()</pre>
+<pre class="cpp" translate="no">GameOverScreen {
+    id: gameOverScreen
+    score: gameArea<span class="operator">.</span>score
+    visible: gameArea<span class="operator">.</span>gameOver
+
+    onRestartRequested: gameArea<span class="operator">.</span>initGame()
+}</pre>
+<p><a href="index.html">Back to Index</a></p>
+</div>
+<!-- @@@part4.html -->
+</body>
+</html>

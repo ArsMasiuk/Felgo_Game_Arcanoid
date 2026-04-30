@@ -1,5 +1,7 @@
 import QtQuick 2.0
 
+// A score popup which is dynamically created at the position of a destroyed brick.
+// It floats downward while fading out, then cleans itself up.
 Text {
     id: floatingScore
 

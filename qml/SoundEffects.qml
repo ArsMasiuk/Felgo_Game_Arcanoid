@@ -2,6 +2,7 @@ import Felgo 4.0
 import QtQuick 2.0
 
 Item {
+    // Export sound effects
     property alias paddle: sfxPaddle
     property alias brickHit: sfxBrickHit
     property alias brickDestroy: sfxBrickDestroy
@@ -11,11 +12,11 @@ Item {
     property alias levelComplete: sfxLevelComplete
     property alias launch: sfxLaunch
 
+    // Link effects to assets
     GameSoundEffect {
         id: sfxPaddle
         source: Qt.resolvedUrl("../assets/sounds/paddle.wav")
-    }
-    
+    } 
     GameSoundEffect {
         id: sfxBrickHit
         source: Qt.resolvedUrl("../assets/sounds/brick_hit.wav")

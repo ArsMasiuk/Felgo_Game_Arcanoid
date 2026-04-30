@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+// Component defines a single brick
 Rectangle {
     id: brick
 
@@ -37,6 +38,8 @@ Rectangle {
         }
     }
 
+    // Called when a ball has hit this brick.
+    // Returns amount of earned scores.
     function hit() {
         hitPoints -= 1
 
@@ -54,6 +57,8 @@ Rectangle {
         return 0
     }
 
+    // Checks collision against the ball's dimensions.
+    // Returns true if active brick has been hit, flase otherwise.
     function collides(bx, by, bw, bh) {
         if (destroyed)
             return false

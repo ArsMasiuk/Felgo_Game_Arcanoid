@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+// Screen shown on level completion
 Rectangle {
     id: levelFinishedScreen
 

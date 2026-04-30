@@ -77,7 +77,8 @@ target_link_libraries(Arcanoid PRIVATE Felgo)
 # documentation
 find_program(QDOC_EXECUTABLE
     NAMES qdoc
-    PATHS "C:/Felgo/Felgo/mingw_64/bin"
+    # uncomment the following line and update path to the qdoc.exe if not found by default
+    #PATHS "C:/Felgo/Felgo/mingw_64/bin"
 )
 
 if(NOT QDOC_EXECUTABLE)

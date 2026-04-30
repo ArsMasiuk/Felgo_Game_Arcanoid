@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+// Screen shown on loosing the game
 Rectangle {
     id: gameOverScreen
 

@@ -142,6 +142,7 @@ GameWindow {
                 }
             }
 
+            // Main game loop
             Timer {
                 interval: 16
                 running: !gameArea.gameOver && !gameArea.levelFinished
@@ -164,23 +165,24 @@ GameWindow {
 
 
 
-                    // Ball movement
+                    // Move ball together with paddle
                     if (ball.ballStuck) {
                         ball.x = paddle.x + paddle.width / 2 - ball.width / 2
                         ball.y = paddle.y - ball.height - 2
                         return
                     }
 
-                    // Move ball
+                    // Move ball freely
                     ball.x += ball.ballSpeedX
                     ball.y += ball.ballSpeedY
 
-                    // Walls
+                    // Side walls collision
                     if (ball.x <= 0 || ball.x + ball.width >= gameArea.width){
                         ball.ballSpeedX *= -1
                         sfx.wall.play()                          // <-- wall hit sound
                     }
 
+                    // Top wall collision
                     if (ball.y <= 0){
                         ball.y = 1
                         ball.ballSpeedY *= -1
@@ -195,7 +197,7 @@ GameWindow {
                         sfx.paddle.play()                       // <-- paddle hit sound
                     }
 
-                    // Bottom → lose a life and stick again
+                    // Bottom hit → lose a life and stick again
                     if (ball.y > gameArea.height) {
                         gameArea.lives -= 1
                         if (gameArea.lives <= 0) {
@@ -284,6 +286,7 @@ GameWindow {
             onRestartRequested: gameArea.initGame()
         }
 
+        // Keys handling
         Keys.onPressed: function(event) {
             if (event.key === Qt.Key_Left)
                 paddle.leftPressed = true
@@ -293,9 +296,11 @@ GameWindow {
 
             if (event.key === Qt.Key_Space) {
                 if (gameArea.gameOver || gameArea.levelFinished) {
+                    // Start new game / level
                     gameArea.initGame()
                     event.accepted = true
                 } else if (ball.ballStuck) {
+                    // Launch the ball
                     ball.ballStuck = false
                     event.accepted = true
                     sfx.launch.play()                       // <-- launch sound
